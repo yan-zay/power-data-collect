@@ -54,6 +54,7 @@ public class SftpFileDownloader {
             localFile.getParentFile().mkdirs();
 
             // 4. 下载文件
+//            sftpChannel.get
             try (InputStream inputStream = sftpChannel.get(remotePath);
                  FileOutputStream outputStream = new FileOutputStream(localFile)) {
 

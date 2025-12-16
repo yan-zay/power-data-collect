@@ -21,14 +21,13 @@ public class TestController {
     private final TestService testService;
 
     @PostMapping(value = "/test01")
-    public String test01(@RequestBody Map<String, String> dto) {
-//        MetricsDataQueryRespVO result = indexCenterManager.requestMetricsListForPage(dto);
+    public String test01() {
         return "test01";
     }
 
     @PostMapping(value = "/test02")
     public String test02() {
-//        testService.test02();
+        testService.test02(null);
         return "test02";
     }
 

@@ -1,7 +1,6 @@
 package com.dtxytech.powerdatacollect.service;
 
-import com.dtxytech.powerdatacollect.entity.PowerForecastData;
-import com.dtxytech.powerdatacollect.mapper.PowerForecastDataMapper;
+//import com.dtxytech.powerdatacollect.entity.PowerForecastData;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,23 +19,24 @@ import java.util.Map;
 @AllArgsConstructor
 public class TestServiceImpl implements TestService {
 
-    private PowerForecastDataMapper powerForecastDataMapper;
+//    private PowerForecastDataMapper powerForecastDataMapper;
 
     @Override
     public void test02(Map<String, String> dto) {
-
+        log.info("test02: {}", dto);
     }
 
     @Override
     public String insertData(Map<String, String> dto) {
-        PowerForecastData build = PowerForecastData.builder()
-                .stationId(dto.get("stationId"))
-                .indicatorType(dto.get("indicatorType"))
-                .forecastTime(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
-                .fileName(dto.get("fileName"))
-                .forecastData(Arrays.asList("11.11", "22.22", "33.33", "44.44"))
-                .build();
-        int insert = powerForecastDataMapper.insert(build);
-        return insert + "";
+//        PowerForecastData build = PowerForecastData.builder()
+//                .stationId(dto.get("stationId"))
+//                .indicatorType(dto.get("indicatorType"))
+//                .forecastTime(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
+//                .fileName(dto.get("fileName"))
+//                .forecastData(Arrays.asList("11.11", "22.22", "33.33", "44.44"))
+//                .build();
+//        int insert = powerForecastDataMapper.insert(build);
+//        return insert + "";
+        return "";
     }
 }
