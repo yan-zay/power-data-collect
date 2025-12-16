@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: power-data-collect
+  profiles:
+    active: dev
+  cloud:
+    nacos:
+      discovery:
+        enabled: true
+        server-addr: localhost:8848
+        namespace: 8dde4204-b581-415b-ab17-04ba3b2d5eb9
+        group: DEFAULT_GROUP
+      config:
+        context-path: /nacos
+        server-addr: localhost:8848
+        namespace: 8dde4204-b581-415b-ab17-04ba3b2d5eb9 # 默认使用命名空间5.5.2
+        group: DEFAULT_GROUP
+        file-extension: yml
