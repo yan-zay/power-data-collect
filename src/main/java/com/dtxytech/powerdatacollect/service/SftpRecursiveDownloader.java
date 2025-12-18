@@ -26,7 +26,7 @@ import java.util.Vector;
 public class SftpRecursiveDownloader {
 
     private final SftpFileParser sftpFileParser;
-    private final TestService testService;
+    private final PowerForecastDataService powerForecastDataService;
 
     /**
      * 递归下载并解析指定远程目录下的所有文件
@@ -45,24 +45,24 @@ public class SftpRecursiveDownloader {
     /**
      * 递归遍历远程目录
      */
-    private void recurseDownload(ChannelSftp sftp, String remotePath, IndicatorTypeEnum fileType) throws SftpException, IOException {
-        Vector<LsEntry> entries = sftp.ls(remotePath);
+    private void recurseDownload(ChannelSftp sftp, String path, IndicatorTypeEnum fileType) throws SftpException, IOException {
+        Vector<LsEntry> entries = sftp.ls(path);
         if (entries == null) return;
 
         for (LsEntry entry : entries) {
             String filename = entry.getFilename();
             // 跳过 "." 和 ".."
-            if (".".equals(filename) || "..".equals(filename) || !filename.contains(fileType.getName())) {
+            if (".".equals(filename) || "..".equals(filename)) {
                 continue;
             }
 
-            String fullPath = remotePath + "/" + filename;
+            String fullPath = path + "/" + filename;
             if (entry.getAttrs().isDir()) {
                 // 递归进入子目录
                 recurseDownload(sftp, fullPath, fileType);
             } else {
                 // 是文件，下载并解析
-                processFile(sftp, fullPath);
+                processFile(sftp, path, filename, fileType);
             }
         }
     }
@@ -70,13 +70,23 @@ public class SftpRecursiveDownloader {
     /**
      * 下载单个文件并调用解析逻辑（预留空方法）
      */
-    private void processFile(ChannelSftp sftp, String remoteFilePath) throws SftpException, IOException {
-        try (InputStream in = sftp.get(remoteFilePath)) {
+    private void processFile(ChannelSftp sftp, String path, String filename, IndicatorTypeEnum indicatorType) throws SftpException, IOException {
+        String fullPath = path + "/" + filename;
+        if (!indicatorType.checkFileName(filename)) {
+            return;
+        }
+        try (InputStream in = sftp.get(fullPath)) {
             // 预留：文件内容已通过 InputStream 获取
             // 此处可调用业务解析逻辑
-            PowerForecastData powerForecastData = sftpFileParser.parseForecastFileFromSftp(remoteFilePath, in);
-            log.info("sftpFileParser.parseForecastFileFromSftp Parsing file: {}", powerForecastData);
-//            testService.insertData();
+            PowerForecastData powerForecastData = sftpFileParser.parseForecastFileFromSftp(indicatorType, in, path, filename);
+            log.info("sftpFileParser.parseForecastFileFromSftp, Parsing file: {}, data size:{}", powerForecastData, powerForecastData.getForecastData().size());
+            boolean exist = powerForecastDataService.checkDuplicate(powerForecastData);
+            if (exist) {
+                log.info("powerForecastDataService.checkDuplicate exist:{}", exist);
+                return;
+            }
+            int row = powerForecastDataService.insertData(powerForecastData);
+            log.info("powerForecastDataService.insertData row:{}", row);
         }
     }
 

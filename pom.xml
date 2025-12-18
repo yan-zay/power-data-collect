@@ -80,19 +80,19 @@
         </dependency>
 
         <!-- Druid 连接池 -->
-<!--        <dependency>
+        <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>druid-spring-boot-starter</artifactId>
             <version>1.2.8</version>
         </dependency>
 
-        &lt;!&ndash; 添加JDBC Starter &ndash;&gt;
+        <!-- 添加JDBC Starter -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-jdbc</artifactId>
         </dependency>
 
-        &lt;!&ndash; MySQL Connector（用于 Doris） &ndash;&gt;
+        <!-- MySQL Connector（用于 Doris） -->
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
@@ -104,7 +104,7 @@
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-boot-starter</artifactId>
             <version>${mybatis-plus.version}</version>
-        </dependency>-->
+        </dependency>
 
         <!-- 显式升级 Jackson（可选但推荐） -->
         <dependency>

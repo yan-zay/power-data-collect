@@ -19,4 +19,14 @@ public enum IndicatorTypeEnum {
     private final String name;
     private final String value;
     private final String desc;
+
+    public boolean checkFileName(String fileName) {
+        fileName = fileName.toUpperCase();
+        if (this == DQ) {
+            return fileName.contains(this.name) && !fileName.contains(CDQ.name);
+        }else if (this == CDQ) {
+            return fileName.contains(this.name);
+        }
+        throw new RuntimeException("IndicatorTypeEnum.checkFileName: " + this.name);
+    }
 }

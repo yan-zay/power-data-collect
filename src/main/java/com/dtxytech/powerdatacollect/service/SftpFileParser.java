@@ -1,12 +1,15 @@
 package com.dtxytech.powerdatacollect.service;
 
 import com.dtxytech.powerdatacollect.entity.PowerForecastData;
+import com.dtxytech.powerdatacollect.enums.IndicatorTypeEnum;
 import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -22,7 +25,7 @@ public class SftpFileParser {
     /**
      * 从远程 SFTP 读取并解析预测数据文件（适配两列格式）
      */
-    public PowerForecastData parseForecastFileFromSftp(String remoteFilePath, InputStream in) {
+    public PowerForecastData parseForecastFileFromSftp(IndicatorTypeEnum indicatorType, InputStream in, String filePath, String filename) {
         // === 2. 流式读取并解析 ===
         try {
             BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
@@ -31,9 +34,6 @@ public class SftpFileParser {
             boolean inDataBlock = false;
             List<String> dataLines = new ArrayList<>();
             String entityTime = null;
-            String indicatorType = "DTCG"; // 默认，也可从 type=... 提取
-
-            Pattern entityPattern = Pattern.compile("<!\\s*Entity=forecastdata.*type=([A-Z]+).*time='([^']+)'");
 
             while ((line = reader.readLine()) != null) {
                 line = line.trim();
@@ -46,12 +46,8 @@ public class SftpFileParser {
                 }
 
                 // 解析 Entity 行，提取 type 和 time
-                if (line.startsWith("<!") && line.contains("Entity=forecastdata")) {
-                    Matcher m = entityPattern.matcher(line);
-                    if (m.find()) {
-                        indicatorType = m.group(1); // 如 DTCG
-                        entityTime = m.group(2).replace('_', ' '); // "2025-12-13_16:30" → "2025-12-13 16:30"
-                    }
+                if (line.startsWith("<!") && line.contains("time=")) {
+                    entityTime = getEntityTime(line);
                     continue;
                 }
 
@@ -84,13 +80,15 @@ public class SftpFileParser {
             }
 
             // 推断 stationId：从 fileName 提取前缀（如 DTDL4_... → DTDL4）
-            String stationId = remoteFilePath.contains("_") ? remoteFilePath.substring(0, remoteFilePath.indexOf('_')) : "UNKNOWN";
+            String stationCode = getStationCode(filePath);
 
             return PowerForecastData.builder()
-                    .stationId(stationId)
-                    .indicatorType(indicatorType)
-                    .forecastTime(entityTime != null ? entityTime : "")
-                    .fileName(remoteFilePath)
+                    .stationCode(stationCode)
+                    .indicatorType(indicatorType.getValue())
+                    .forecastTime(entityTime != null ? entityTime : "2025-12-18 00:00:00")
+                    .filePath(filePath)
+                    .fileName(filename)
+                    .createTime(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
                     .forecastData(dataLines)
                     .build();
 
@@ -98,5 +96,38 @@ public class SftpFileParser {
             System.err.println("❌ 读取或解析文件失败: " + e.getMessage());
             return null;
         }
+    }
+
+    private static String getEntityTime(String line) {
+        Pattern timePattern = Pattern.compile("time='([\\d-_:]+)'");
+        Matcher matcher = timePattern.matcher(line);
+        if (matcher.find()) {
+            String timeStr = matcher.group(1);
+            return timeStr;
+
+/*            // 根据字符串长度判断是哪种格式
+            if (timeStr.length() == 16) {  // "yyyy-MM-dd_HH:mm" 格式
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH:mm");
+                return LocalDateTime.parse(timeStr, formatter);
+            } else if (timeStr.length() == 19) {  // "yyyy-MM-dd_HH:mm:ss" 格式
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH:mm:ss");
+                return LocalDateTime.parse(timeStr, formatter);
+            }*/
+        }
+
+        throw new IllegalArgumentException("无法解析时间字符串: " + line);
+    }
+
+    private static String getStationCode(String filePath) {
+        if (filePath == null || filePath.isEmpty()) {
+            return "";
+        }
+
+        String[] parts = filePath.split("/");
+        if (parts.length >= 5) { // 路径以/开头会产生一个空的第一项
+            return parts[4]; // 第五项实际上是第四级目录
+        }
+
+        return "";
     }
 }
