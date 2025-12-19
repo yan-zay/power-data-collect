@@ -1,6 +1,6 @@
 package com.dtxytech.powerdatacollect.controller;
 
-import com.dtxytech.powerdatacollect.service.TestService;
+import com.dtxytech.powerdatacollect.service.test.TestService;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;

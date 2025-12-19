@@ -1,4 +1,4 @@
-package com.dtxytech.powerdatacollect.service;
+package com.dtxytech.powerdatacollect.service.power;
 
 import com.dtxytech.powerdatacollect.entity.PowerForecastData;
 

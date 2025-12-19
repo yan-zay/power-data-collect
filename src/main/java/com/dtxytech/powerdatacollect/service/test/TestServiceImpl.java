@@ -1,4 +1,4 @@
-package com.dtxytech.powerdatacollect.service;
+package com.dtxytech.powerdatacollect.service.test;
 
 import com.dtxytech.powerdatacollect.entity.PowerForecastData;
 import com.dtxytech.powerdatacollect.mapper.PowerForecastDataMapper;

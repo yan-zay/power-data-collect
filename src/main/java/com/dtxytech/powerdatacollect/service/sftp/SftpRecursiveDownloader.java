@@ -1,7 +1,8 @@
-package com.dtxytech.powerdatacollect.service;
+package com.dtxytech.powerdatacollect.service.sftp;
 
 import com.dtxytech.powerdatacollect.entity.PowerForecastData;
 import com.dtxytech.powerdatacollect.enums.IndicatorTypeEnum;
+import com.dtxytech.powerdatacollect.service.power.PowerForecastDataService;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.ChannelSftp.LsEntry;
 import com.jcraft.jsch.SftpException;
@@ -25,6 +26,8 @@ import java.util.Vector;
 @AllArgsConstructor
 public class SftpRecursiveDownloader {
 
+    private static final String SEPARATOR = "/";
+
     private final SftpFileParser sftpFileParser;
     private final PowerForecastDataService powerForecastDataService;
 
@@ -32,11 +35,11 @@ public class SftpRecursiveDownloader {
      * 递归下载并解析指定远程目录下的所有文件
      *
      * @param remoteDir 远程目录路径（如 "/data/logs"）
-     * @param fileType
+     * @param indicatorType 指标类型
      */
-    public void downloadAndParseAllFiles(ChannelSftp sftp, String remoteDir, IndicatorTypeEnum fileType) {
+    public void downloadAndParseAllFile(ChannelSftp sftp, String remoteDir, IndicatorTypeEnum indicatorType) {
         try {
-            recurseDownload(sftp, remoteDir, fileType);
+            recurseDownload(sftp, remoteDir, indicatorType);
         } catch (SftpException | IOException e) {
             throw new RuntimeException("Failed to recursively download files from: " + remoteDir, e);
         }
@@ -45,7 +48,7 @@ public class SftpRecursiveDownloader {
     /**
      * 递归遍历远程目录
      */
-    private void recurseDownload(ChannelSftp sftp, String path, IndicatorTypeEnum fileType) throws SftpException, IOException {
+    private void recurseDownload(ChannelSftp sftp, String path, IndicatorTypeEnum indicatorType) throws SftpException, IOException {
         Vector<LsEntry> entries = sftp.ls(path);
         if (entries == null) return;
 
@@ -56,13 +59,13 @@ public class SftpRecursiveDownloader {
                 continue;
             }
 
-            String fullPath = path + "/" + filename;
+            String fullPath = path + SEPARATOR + filename;
             if (entry.getAttrs().isDir()) {
                 // 递归进入子目录
-                recurseDownload(sftp, fullPath, fileType);
+                recurseDownload(sftp, fullPath, indicatorType);
             } else {
                 // 是文件，下载并解析
-                processFile(sftp, path, filename, fileType);
+                processFile(sftp, path, filename, indicatorType);
             }
         }
     }
@@ -71,7 +74,7 @@ public class SftpRecursiveDownloader {
      * 下载单个文件并调用解析逻辑（预留空方法）
      */
     private void processFile(ChannelSftp sftp, String path, String filename, IndicatorTypeEnum indicatorType) throws SftpException, IOException {
-        String fullPath = path + "/" + filename;
+        String fullPath = path + SEPARATOR + filename;
         if (!indicatorType.checkFileName(filename)) {
             return;
         }
@@ -82,7 +85,7 @@ public class SftpRecursiveDownloader {
             log.info("sftpFileParser.parseForecastFileFromSftp, Parsing file: {}, data size:{}", powerForecastData, powerForecastData.getForecastData().size());
             boolean exist = powerForecastDataService.checkDuplicate(powerForecastData);
             if (exist) {
-                log.info("powerForecastDataService.checkDuplicate exist:{}", exist);
+                log.info("powerForecastDataService.checkDuplicate exist powerForecastData:{}", powerForecastData);
                 return;
             }
             int row = powerForecastDataService.insertData(powerForecastData);
@@ -98,6 +101,5 @@ public class SftpRecursiveDownloader {
      */
     protected void parseFileContent(String remoteFilePath, InputStream contentStream) {
         // TODO: 实现具体的文件解析逻辑（如 JSON 解析、日志分析等）
-        // 示例：System.out.println("Parsing file: " + remoteFilePath);
     }
 }

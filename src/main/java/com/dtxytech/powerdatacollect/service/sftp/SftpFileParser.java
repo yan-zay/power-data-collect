@@ -1,7 +1,8 @@
-package com.dtxytech.powerdatacollect.service;
+package com.dtxytech.powerdatacollect.service.sftp;
 
 import com.dtxytech.powerdatacollect.entity.PowerForecastData;
 import com.dtxytech.powerdatacollect.enums.IndicatorTypeEnum;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
@@ -19,6 +20,7 @@ import java.util.regex.Pattern;
  * @Author zay
  * @Date 2025/12/16 17:26
  */
+@Slf4j
 @Component
 public class SftpFileParser {
 
@@ -70,8 +72,6 @@ public class SftpFileParser {
 
                 // 收集有效数据行（以 # 开头）
                 if (inDataBlock && line.startsWith("#")) {
-                    // 清理末尾可能的 tab 或空格
-//                        dataLines.add(line);
                     String[] cols = line.split("\t");
                     if (cols.length >= 2) {
                         dataLines.add(cols[1]); // "0.65"
@@ -93,7 +93,7 @@ public class SftpFileParser {
                     .build();
 
         } catch (Exception e) {
-            System.err.println("❌ 读取或解析文件失败: " + e.getMessage());
+            log.error("❌ 读取或解析文件失败: {}", e.getMessage(), e);
             return null;
         }
     }
@@ -102,9 +102,7 @@ public class SftpFileParser {
         Pattern timePattern = Pattern.compile("time='([\\d-_:]+)'");
         Matcher matcher = timePattern.matcher(line);
         if (matcher.find()) {
-            String timeStr = matcher.group(1);
-            return timeStr;
-
+            return matcher.group(1);
 /*            // 根据字符串长度判断是哪种格式
             if (timeStr.length() == 16) {  // "yyyy-MM-dd_HH:mm" 格式
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH:mm");
@@ -114,7 +112,6 @@ public class SftpFileParser {
                 return LocalDateTime.parse(timeStr, formatter);
             }*/
         }
-
         throw new IllegalArgumentException("无法解析时间字符串: " + line);
     }
 

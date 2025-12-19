@@ -1,4 +1,4 @@
-package com.dtxytech.powerdatacollect.service;
+package com.dtxytech.powerdatacollect.service.sftp;
 
 import com.dtxytech.powerdatacollect.config.SftpProperties;
 import com.dtxytech.powerdatacollect.enums.IndicatorTypeEnum;
@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 @AllArgsConstructor
-public class Qqq {
+public class SftpDataSyncService {
 
     private final SftpConnectionManager sftpConnectionManager;
     private final SftpProperties sftpProperties;
@@ -27,10 +27,9 @@ public class Qqq {
         for (StationEnum station : StationEnum.values()) {
             log.info("Starting SFTP sync for station: {}", station);
             try {
-                sftpRecursiveDownloader.downloadAndParseAllFiles(sftp, sftpProperties.getRemoteDir(), fileType);
-//                processStation(fileType, station);
+                sftpRecursiveDownloader.downloadAndParseAllFile(sftp, sftpProperties.getRemoteDir(), fileType);
             } catch (Exception e) {
-                log.error("Process station failed qqqqqqq: {}", station, e);
+                log.error("Process station failed station: {}", station, e);
             }
         }
     }

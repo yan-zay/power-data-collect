@@ -1,4 +1,4 @@
-package com.dtxytech.powerdatacollect.service;
+package com.dtxytech.powerdatacollect.service.sftp;
 
 import com.dtxytech.powerdatacollect.config.SftpProperties;
 import com.jcraft.jsch.*;
