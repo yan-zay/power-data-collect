@@ -1,0 +1,13 @@
+/.idea/
+**/target/
+*/target
+*/*/target
+/*/target/
+
+*.iml
+*/*.iml
+*/*/*.iml
+.vscode/
+.idea/
+*.log
+logs
