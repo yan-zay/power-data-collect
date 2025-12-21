@@ -11,7 +11,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum StationEnum {
 
-//    DQ("DQ", "SHORT_POWER", "短期预测功率"),
+    DQ("DQ", "SHORT_POWER", "短期预测功率"),
     CDQ("CDQ", "VERY_SHORT_POWER", "超短期预测功率"),
 
     ;

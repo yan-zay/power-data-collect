@@ -31,8 +31,9 @@ sftp:
   username: sftp
   password: JCDZ@sp.0
   # remoteDir: /home/ies/success
-  remoteDir: /home/ies/success/CF_Cg/20251217
+  remoteDir: /home/ies/success
   localDownloadDir: ./downloads
+  fileStartDate: "20251001"
 
 app:
   local:

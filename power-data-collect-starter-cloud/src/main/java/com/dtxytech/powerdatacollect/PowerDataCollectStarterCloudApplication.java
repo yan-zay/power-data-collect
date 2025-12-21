@@ -1,4 +1,4 @@
-package com.dtxytech.powerdatacollect.starter.cloud;
+package com.dtxytech.powerdatacollect;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -9,5 +9,4 @@ public class PowerDataCollectStarterCloudApplication {
     public static void main(String[] args) {
         SpringApplication.run(PowerDataCollectStarterCloudApplication.class, args);
     }
-
 }

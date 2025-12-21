@@ -16,6 +16,7 @@ public class SftpProperties {
     private int port = 22;
     private String username;
     private String password;
-    private String remoteDir;      // 远程根目录
-    private String localDownloadDir = "./downloads";
+    private String remoteDir;
+    private String localDownloadDir;
+    private String fileStartDate;
 }

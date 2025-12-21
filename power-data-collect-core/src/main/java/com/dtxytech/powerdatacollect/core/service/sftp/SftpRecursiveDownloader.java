@@ -1,5 +1,6 @@
 package com.dtxytech.powerdatacollect.core.service.sftp;
 
+import com.dtxytech.powerdatacollect.core.config.SftpProperties;
 import com.dtxytech.powerdatacollect.core.entity.PowerForecastData;
 import com.dtxytech.powerdatacollect.core.enums.IndicatorTypeEnum;
 import com.dtxytech.powerdatacollect.core.service.power.PowerForecastDataService;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.Vector;
 
 /**
@@ -30,6 +32,7 @@ public class SftpRecursiveDownloader {
 
     private final SftpFileParser sftpFileParser;
     private final PowerForecastDataService powerForecastDataService;
+    private final SftpProperties sftpProperties;
 
     /**
      * 递归下载并解析指定远程目录下的所有文件
@@ -51,11 +54,13 @@ public class SftpRecursiveDownloader {
     private void recurseDownload(ChannelSftp sftp, String path, IndicatorTypeEnum indicatorType) throws SftpException, IOException {
         Vector<LsEntry> entries = sftp.ls(path);
         if (entries == null) return;
+        entries.sort((o1, o2) -> o2.getFilename().compareTo(o1.getFilename()));
 
         for (LsEntry entry : entries) {
             String filename = entry.getFilename();
             // 跳过 "." 和 ".."
-            if (".".equals(filename) || "..".equals(filename)) {
+            if (".".equals(filename) || "..".equals(filename)
+                    || (filename.matches("\\d+") && filename.compareTo(sftpProperties.getFileStartDate()) < 0)) {
                 continue;
             }
 
@@ -82,14 +87,16 @@ public class SftpRecursiveDownloader {
             // 预留：文件内容已通过 InputStream 获取
             // 此处可调用业务解析逻辑
             PowerForecastData powerForecastData = sftpFileParser.parseForecastFileFromSftp(indicatorType, in, path, filename);
-            log.info("sftpFileParser.parseForecastFileFromSftp, Parsing file: {}, data size:{}", powerForecastData, powerForecastData.getForecastData().size());
+            log.info("sftpFileParser.parseForecastFileFromSftp, Parsing file: {}, data size:{}", filename, powerForecastData.getForecastData().size());
             boolean exist = powerForecastDataService.checkDuplicate(powerForecastData);
             if (exist) {
                 log.info("powerForecastDataService.checkDuplicate exist powerForecastData:{}", powerForecastData);
                 return;
             }
             int row = powerForecastDataService.insertData(powerForecastData);
-            log.info("powerForecastDataService.insertData row:{}", row);
+            if (row != 1) {
+                log.error("powerForecastDataService.insertData powerForecastData:{}", powerForecastData);
+            }
         }
     }
 

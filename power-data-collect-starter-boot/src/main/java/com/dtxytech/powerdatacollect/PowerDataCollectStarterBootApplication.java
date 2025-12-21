@@ -1,13 +1,14 @@
-package com.dtxytech.powerdatacollect.starter.boot;
+package com.dtxytech.powerdatacollect;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
+@EnableScheduling
 @SpringBootApplication
 public class PowerDataCollectStarterBootApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(PowerDataCollectStarterBootApplication.class, args);
     }
-
 }

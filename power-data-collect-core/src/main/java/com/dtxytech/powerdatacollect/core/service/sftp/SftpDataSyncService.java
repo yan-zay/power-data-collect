@@ -24,13 +24,15 @@ public class SftpDataSyncService {
 
     public void syncFileList(IndicatorTypeEnum fileType) {
         ChannelSftp sftp = sftpConnectionManager.getCurrentSftp();
-        for (StationEnum station : StationEnum.values()) {
-            log.info("Starting SFTP sync for station: {}", station);
-            try {
-                sftpRecursiveDownloader.downloadAndParseAllFile(sftp, sftpProperties.getRemoteDir(), fileType);
-            } catch (Exception e) {
-                log.error("Process station failed station: {}", station, e);
-            }
+//        log.info("Starting SFTP sync for station: {}", station);
+        try {
+            sftpRecursiveDownloader.downloadAndParseAllFile(sftp, sftpProperties.getRemoteDir(), fileType);
+        } catch (Exception e) {
+//            log.error("Process station failed station: {}", station, e);
+            log.error("Process station failed sftpProperties.getRemoteDir(): {}, fileType: {},", sftpProperties.getRemoteDir(), fileType, e);
         }
+/*        for (StationEnum station : StationEnum.values()) {
+
+        }*/
     }
 }
