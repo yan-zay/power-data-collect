@@ -35,7 +35,7 @@ public class SftpFileParser {
             String line;
             boolean inDataBlock = false;
             List<String> dataLines = new ArrayList<>();
-            String entityTime = null;
+            String forecastTimeStr = null;
 
             while ((line = reader.readLine()) != null) {
                 line = line.trim();
@@ -49,7 +49,7 @@ public class SftpFileParser {
 
                 // 解析 Entity 行，提取 type 和 time
                 if (line.startsWith("<!") && line.contains("time=")) {
-                    entityTime = getEntityTime(line);
+                    forecastTimeStr = getEntityTime(line);
                     continue;
                 }
 
@@ -85,7 +85,8 @@ public class SftpFileParser {
             return PowerForecastData.builder()
                     .stationCode(stationCode)
                     .indicatorType(indicatorType.getValue())
-                    .forecastTime(entityTime != null ? entityTime : "2025-12-18 00:00:00")
+                    .forecastTimeStr(forecastTimeStr != null ? forecastTimeStr : "2025-12-18 00:00:00")
+                    .forecastTime(parseForecastTimeStr(forecastTimeStr))
                     .filePath(filePath)
                     .fileName(filename)
                     .createTime(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
@@ -113,6 +114,28 @@ public class SftpFileParser {
             }*/
         }
         throw new IllegalArgumentException("无法解析时间字符串: " + line);
+    }
+
+
+    /**
+     * 根据指标类型统一解析日期格式为 "yyyy-MM-dd_HH:mm:ss"
+     * @param forecastTimeStr 原始时间字符串
+     * @return 格式化后的时间字符串
+     */
+    public static String parseForecastTimeStr(String forecastTimeStr) {
+        if (forecastTimeStr == null || forecastTimeStr.isEmpty()) {
+            return forecastTimeStr;
+        }
+        String normalizedTimeStr = forecastTimeStr.replace("_", " ");
+
+        // 根据字符串长度判断是哪种格式
+        if (normalizedTimeStr.length() == 16) {  // "yyyy-MM-dd_HH:mm" 格式 (CDQ类型)
+            return normalizedTimeStr + ":00"; // 补充秒数 ":00"
+        } else if (normalizedTimeStr.length() == 19) {  // "yyyy-MM-dd_HH:mm:ss" 格式 (DQ类型)
+            return normalizedTimeStr; // 已经是标准格式
+        }
+
+        return normalizedTimeStr; // 其他情况保持原样
     }
 
     private static String getStationCode(String filePath) {

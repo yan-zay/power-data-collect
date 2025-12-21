@@ -28,6 +28,9 @@ public class PowerForecastData {
     @TableField(value = "indicator_type")
     private String indicatorType;
 
+    @TableField(value = "forecast_time_str")
+    private String forecastTimeStr;
+
     @TableField(value = "forecast_time")
     private String forecastTime;
 

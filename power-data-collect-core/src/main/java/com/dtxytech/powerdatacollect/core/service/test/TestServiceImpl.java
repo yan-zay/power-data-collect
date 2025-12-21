@@ -32,7 +32,7 @@ public class TestServiceImpl implements TestService {
         PowerForecastData build = PowerForecastData.builder()
                 .stationCode(dto.get("stationCode"))
                 .indicatorType(dto.get("indicatorType"))
-                .forecastTime(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
+                .forecastTimeStr(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
                 .filePath(dto.get("filePath"))
                 .fileName(dto.get("fileName"))
                 .createTime(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))

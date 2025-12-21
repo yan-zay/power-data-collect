@@ -26,7 +26,7 @@ public class PowerForecastDataServiceImpl implements PowerForecastDataService {
         LambdaQueryWrapper<PowerForecastData> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(PowerForecastData::getStationCode, powerForecastData.getStationCode())
                 .eq(PowerForecastData::getIndicatorType, powerForecastData.getIndicatorType())
-                .eq(PowerForecastData::getForecastTime, powerForecastData.getForecastTime());
+                .eq(PowerForecastData::getForecastTimeStr, powerForecastData.getForecastTimeStr());
         Long count = powerForecastDataMapper.selectCount(wrapper);
         return count >= 1;
     }
