@@ -1,11 +1,9 @@
 package com.dtxytech.powerdatacollect.core.controller;
 
 import com.dtxytech.powerdatacollect.core.service.test.TestService;
+import com.dtxytech.powerdatacollect.core.task.SyncFetchFileTask;
 import lombok.AllArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
@@ -19,6 +17,7 @@ import java.util.Map;
 public class TestController {
 
     private final TestService testService;
+    private final SyncFetchFileTask syncFetchFileTask;
 
     @PostMapping(value = "/test01")
     public String test01() {
@@ -34,5 +33,11 @@ public class TestController {
     @PostMapping(value = "/insertData")
     public String insertData(@RequestBody Map<String, String> dto) {
         return testService.insertData(dto);
+    }
+
+    @GetMapping(value = "/test04")
+    public String test04() {
+        syncFetchFileTask.syncVeryShortTermFile();
+        return "test04";
     }
 }

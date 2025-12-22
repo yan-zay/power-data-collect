@@ -1,6 +1,6 @@
 server:
   servlet:
-    context-path: /power-data-collect-starter-cloud
+    context-path: /power-data-collect
   address: 0.0.0.0
 
 mybatis:

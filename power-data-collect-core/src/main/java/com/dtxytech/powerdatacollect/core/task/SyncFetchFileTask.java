@@ -22,7 +22,7 @@ public class SyncFetchFileTask {
     private final SftpDataSyncService sftpDataSyncService;
 
     // 每10分钟拉一次短期数据
-//    @Scheduled(fixedRate = 30 * 60 * 1000)
+    @Scheduled(fixedRate = 30 * 60 * 1000)
     public void syncShortTermFile() {
         log.info("Starting syncShortTermFile SFTP sync");
         sftpDataSyncService.syncFileList(IndicatorTypeEnum.DQ);
@@ -30,17 +30,17 @@ public class SyncFetchFileTask {
     }
 
     // 每2分钟拉一次超短期数据
-//    @Scheduled(fixedRate = 10 * 60 * 1000)
+    @Scheduled(fixedRate = 10 * 60 * 1000)
     public void syncVeryShortTermFile() {
         log.info("Starting syncVeryShortTermFile SFTP sync");
         sftpDataSyncService.syncFileList(IndicatorTypeEnum.CDQ);
         log.info("syncVeryShortTermFile sync completed");
     }
 
-    @PostConstruct
+/*    @PostConstruct
     public void init() {
         // 使用 CompletableFuture 异步执行两个方法
         CompletableFuture.runAsync(this::syncShortTermFile);
         CompletableFuture.runAsync(this::syncVeryShortTermFile);
-    }
+    }*/
 }
