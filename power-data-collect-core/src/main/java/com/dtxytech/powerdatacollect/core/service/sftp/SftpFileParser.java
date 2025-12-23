@@ -80,7 +80,7 @@ public class SftpFileParser {
             }
 
             // 推断 stationId：从 fileName 提取前缀（如 DTDL4_... → DTDL4）
-            String stationCode = getStationCode(filePath);
+            String stationCode = getPathPart(filePath, 4);
 
             return PowerForecastData.builder()
                     .stationCode(stationCode)
@@ -138,16 +138,14 @@ public class SftpFileParser {
         return normalizedTimeStr; // 其他情况保持原样
     }
 
-    private static String getStationCode(String filePath) {
+    public static String getPathPart(String filePath, int part) {
         if (filePath == null || filePath.isEmpty()) {
             return "";
         }
-
         String[] parts = filePath.split("/");
-        if (parts.length >= 5) { // 路径以/开头会产生一个空的第一项
-            return parts[4]; // 第五项实际上是第四级目录
+        if (parts.length >= part + 1) { // 路径以/开头会产生一个空的第一项
+            return parts[part]; // 第五项实际上是第四级目录
         }
-
-        return "";
+        throw new IllegalArgumentException("Invalid file path:{}" + filePath + ", part{}" + part);
     }
 }

@@ -11,8 +11,11 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.Vector;
 
@@ -29,10 +32,16 @@ import java.util.Vector;
 public class SftpRecursiveDownloader {
 
     private static final String SEPARATOR = "/";
+    private final String fileStartDate = "2025-10-01";
 
     private final SftpFileParser sftpFileParser;
     private final PowerForecastDataService powerForecastDataService;
     private final SftpProperties sftpProperties;
+
+    @PostConstruct
+    public void init() {
+        this.fileStartDate
+    }
 
     /**
      * 递归下载并解析指定远程目录下的所有文件
@@ -59,13 +68,16 @@ public class SftpRecursiveDownloader {
         for (LsEntry entry : entries) {
             String filename = entry.getFilename();
             // 跳过 "." 和 ".."
-            if (".".equals(filename) || "..".equals(filename)
-                    || (filename.matches("\\d+") && filename.compareTo(sftpProperties.getFileStartDate()) < 0)) {
+            if (".".equals(filename) || "..".equals(filename)) {
                 continue;
             }
 
             String fullPath = path + SEPARATOR + filename;
             if (entry.getAttrs().isDir()) {
+                if (LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"))
+                        .compareTo(SftpFileParser.getPathPart(fullPath, 4)) < 0) {
+                    continue;
+                }
                 // 递归进入子目录
                 recurseDownload(sftp, fullPath, indicatorType);
             } else {
