@@ -40,7 +40,7 @@ public class SyncFetchFileTask {
 
     @PostConstruct
     public void init() {
-        syncShortTermFile();
+        CompletableFuture.runAsync(this::syncShortTermFile);
         syncVeryShortTermFile();
         SftpRecursiveDownloader.INITIALIZED = true;
     }
