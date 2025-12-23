@@ -32,16 +32,11 @@ import java.util.Vector;
 public class SftpRecursiveDownloader {
 
     private static final String SEPARATOR = "/";
-    private final String fileStartDate = "2025-10-01";
+    public volatile static boolean INITIALIZED = false;
 
     private final SftpFileParser sftpFileParser;
     private final PowerForecastDataService powerForecastDataService;
     private final SftpProperties sftpProperties;
-
-    @PostConstruct
-    public void init() {
-        this.fileStartDate
-    }
 
     /**
      * 递归下载并解析指定远程目录下的所有文件
@@ -74,8 +69,7 @@ public class SftpRecursiveDownloader {
 
             String fullPath = path + SEPARATOR + filename;
             if (entry.getAttrs().isDir()) {
-                if (LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"))
-                        .compareTo(SftpFileParser.getPathPart(fullPath, 4)) < 0) {
+                if (checkDirDate(fullPath)) {
                     continue;
                 }
                 // 递归进入子目录
@@ -85,6 +79,11 @@ public class SftpRecursiveDownloader {
                 processFile(sftp, path, filename, indicatorType);
             }
         }
+    }
+
+    private static boolean checkDirDate(String fullPath) {
+        return LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"))
+                .compareTo(SftpFileParser.getPathPart(fullPath, 4)) < 0 && INITIALIZED;
     }
 
     /**
