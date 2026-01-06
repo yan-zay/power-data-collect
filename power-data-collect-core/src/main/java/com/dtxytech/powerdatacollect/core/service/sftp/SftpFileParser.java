@@ -146,6 +146,8 @@ public class SftpFileParser {
         if (parts.length >= part + 1) { // 路径以/开头会产生一个空的第一项
             return parts[part]; // 第五项实际上是第四级目录
         }
-        throw new IllegalArgumentException("Invalid file path:{}" + filePath + ", part{}" + part);
+        log.error("Invalid file filePath:{}, part:{}", filePath, part);
+        return "";
+//        throw new IllegalArgumentException("Invalid file path:{}" + filePath + ", part{}" + part);
     }
 }
