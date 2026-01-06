@@ -85,7 +85,7 @@ public class SftpFileParser {
             return PowerForecastData.builder()
                     .stationCode(stationCode)
                     .indicatorType(indicatorType.getValue())
-                    .forecastTimeStr(forecastTimeStr != null ? forecastTimeStr : "2025-12-18 00:00:00")
+                    .forecastTimeStr(forecastTimeStr != null ? forecastTimeStr : "2000-00-00 00:00:00")
                     .forecastTime(parseForecastTimeStr(forecastTimeStr))
                     .filePath(filePath)
                     .fileName(filename)

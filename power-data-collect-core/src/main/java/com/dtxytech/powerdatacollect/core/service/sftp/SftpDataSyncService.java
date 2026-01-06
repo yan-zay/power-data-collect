@@ -1,7 +1,6 @@
 package com.dtxytech.powerdatacollect.core.service.sftp;
 
 import com.dtxytech.powerdatacollect.core.enums.IndicatorTypeEnum;
-import com.dtxytech.powerdatacollect.core.enums.StationEnum;
 import com.dtxytech.powerdatacollect.core.config.SftpProperties;
 import com.jcraft.jsch.ChannelSftp;
 import lombok.AllArgsConstructor;
