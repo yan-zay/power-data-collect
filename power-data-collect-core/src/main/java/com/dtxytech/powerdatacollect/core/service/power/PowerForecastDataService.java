@@ -10,5 +10,5 @@ public interface PowerForecastDataService {
 
     int insertData(PowerForecastData obj);
 
-    boolean checkDuplicate(PowerForecastData powerForecastData);
+    boolean checkDuplicate(PowerForecastData obj);
 }

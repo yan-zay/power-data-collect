@@ -1,6 +1,7 @@
 package com.dtxytech.powerdatacollect.core.service.power;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.dtxytech.powerdatacollect.core.entity.PowerForecastData;
 import com.dtxytech.powerdatacollect.core.mapper.PowerForecastDataMapper;
 import lombok.AllArgsConstructor;
@@ -12,7 +13,7 @@ import org.springframework.stereotype.Service;
  */
 @Service
 @AllArgsConstructor
-public class PowerForecastDataServiceImpl implements PowerForecastDataService {
+public class PowerForecastDataServiceImpl extends ServiceImpl<PowerForecastDataMapper, PowerForecastData> implements PowerForecastDataService {
 
     private PowerForecastDataMapper powerForecastDataMapper;
 
@@ -26,7 +27,7 @@ public class PowerForecastDataServiceImpl implements PowerForecastDataService {
         LambdaQueryWrapper<PowerForecastData> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(PowerForecastData::getStationCode, powerForecastData.getStationCode())
                 .eq(PowerForecastData::getIndicatorType, powerForecastData.getIndicatorType())
-                .eq(PowerForecastData::getForecastTimeStr, powerForecastData.getForecastTimeStr());
+                .eq(PowerForecastData::getCollectTime, powerForecastData.getCollectTime());
         Long count = powerForecastDataMapper.selectCount(wrapper);
         return count >= 1;
     }
