@@ -21,6 +21,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class PowerForecastData {
 
+    @TableField(value = "station_code")
     private String stationCode;
 
     private String indicatorType;
@@ -33,6 +34,7 @@ public class PowerForecastData {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime forecastTime;
 
+    @TableField(value = "station_id")
     private String stationId;
 
     private String filePath;

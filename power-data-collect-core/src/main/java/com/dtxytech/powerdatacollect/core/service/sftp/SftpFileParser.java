@@ -86,6 +86,7 @@ public class SftpFileParser {
             }
             // 推断 stationId：从 fileName 提取前缀（如 DTDL4_... → DTDL4）
             String stationCode = getPathPart(filePath, 4);
+            log.info("parseForecastFileFromSftp stationCode:{}", stationCode);
 
             return getListDate(indicatorType, filePath, filename, stationCode, forecastTimeStr, dataLines);
         } catch (Exception e) {
@@ -98,10 +99,12 @@ public class SftpFileParser {
                                                 String stationCode, String forecastTimeStr, List<String> dataLines) {
         List<PowerForecastData> result = new ArrayList<>();
         LocalDateTime collectTime = parseForecastTimeStr(forecastTimeStr);
-        LocalDateTime forecastTime = collectTime;
+        LocalDateTime forecastTime = parseForecastTimeStr(forecastTimeStr);
+        String stationId = stationService.getStationIdByCode(stationCode);
+        log.info("parseForecastFileFromSftp getListDate stationCode:{}， stationId:{}", stationCode, stationId);
         for (String data : dataLines) {
             PowerForecastData obj = PowerForecastData.builder()
-                    .stationId(stationService.getStationIdByCode(stationCode))
+                    .stationId(stationId)
                     .stationCode(stationCode)
                     .indicatorType(indicatorType.getValue())
                     .forecastTimeStr(forecastTimeStr != null ? forecastTimeStr : "2000-00-00 00:00:00")

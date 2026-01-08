@@ -98,14 +98,17 @@ public class SftpRecursiveDownloader {
             // 此处可调用业务解析逻辑
             List<PowerForecastData> list = sftpFileParser.parseForecastFileFromSftp(indicatorType, in, path, filename);
             log.info("sftpFileParser.parseForecastFileFromSftp, Parsing file: {}, data size:{}", filename, list.size());
+            if (list.isEmpty()) {
+                return;
+            }
             boolean exist = powerForecastDataService.checkDuplicate(list.get(0));
             if (exist) {
-                log.info("powerForecastDataService.checkDuplicate exist powerForecastData:{}", list);
+                log.info("powerForecastDataService.checkDuplicate exist, path:{}, filename:{}", path, filename);
                 return;
             }
             boolean saved = powerForecastDataService.saveBatch(list);
             if (saved) {
-                log.error("powerForecastDataService.insertData powerForecastData:{}", list);
+                log.error("powerForecastDataService.saveBatch error, list:{}", list);
             }
         }
     }
