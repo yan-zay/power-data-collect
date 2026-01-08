@@ -24,19 +24,20 @@ public class StationServiceImpl implements StationService {
 
     @Override
     public String getStationIdByCode(String stationCode) {
-        String body = getData(stationCode);
+        return null;
+/*        String body = getData(stationCode);
         if (body == null) {
-            return "";
+            return null;
         }
         List<AssetStationVO> list = JSON.parseArray(body, AssetStationVO.class);
         AssetStationVO assetStationVO = list.stream().filter(obj -> obj.getCode().equals(stationCode)
                 && obj.getDefaultValue().getValue().equals(stationCode)).findFirst().orElse(null);
-        return assetStationVO == null ? "" : assetStationVO.getAssetId();
+        return assetStationVO == null ? null : assetStationVO.getAssetId();*/
     }
 
     public String getData(String stationCode) {
 //        String url = systemConfig.getObsPointServerUrl() + systemConfig.getObsPointApiUrl();
-        String url = "";
+        String url = "http://127.0.0.1:41104/";
 
         // 构建请求体
         Map<String, Object> map = new HashMap<>();
