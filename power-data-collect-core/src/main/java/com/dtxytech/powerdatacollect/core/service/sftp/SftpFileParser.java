@@ -108,7 +108,7 @@ public class SftpFileParser {
                     .forecastTime(forecastTime)
                     .stationCode(stationCode)
                     .indexCode(indicatorType.getValue())
-                    .energyType("//?")//?
+                    .energyType("energyType")//?
 
                     .assetCode(stationId)
                     .forecastValue(data)
