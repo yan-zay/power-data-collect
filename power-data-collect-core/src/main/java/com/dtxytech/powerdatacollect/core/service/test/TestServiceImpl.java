@@ -27,16 +27,21 @@ public class TestServiceImpl implements TestService {
 
     @Override
     public String insertData(Map<String, String> dto) {
-        PowerForecastData build = PowerForecastData.builder()
-                .stationCode(dto.get("stationCode"))
-                .indexCode(dto.get("indicatorType"))
+        PowerForecastData obj = PowerForecastData.builder()
+                .collectTime(LocalDateTime.now())
                 .forecastTime(LocalDateTime.now())
+                .stationCode(dto.get("stationCode"))
+                .indexCode(dto.get("indexCode"))
+                .energyType(dto.get("energyType"))
+
+                .assetCode(dto.get("assetCode"))
+                .forecastValue(dto.get("forecastValue"))
+                .orderNo(-1)
                 .filePath(dto.get("filePath"))
                 .fileName(dto.get("fileName"))
                 .createTime(LocalDateTime.now())
-                .forecastValue("44.44")
                 .build();
-        int insert = powerForecastDataMapper.insert(build);
+        int insert = powerForecastDataMapper.insert(obj);
         return insert + "";
     }
 }
