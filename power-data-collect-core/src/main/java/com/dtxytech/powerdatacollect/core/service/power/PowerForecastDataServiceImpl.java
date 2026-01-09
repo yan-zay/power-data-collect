@@ -26,7 +26,7 @@ public class PowerForecastDataServiceImpl extends ServiceImpl<PowerForecastDataM
     public boolean checkDuplicate(PowerForecastData powerForecastData) {
         LambdaQueryWrapper<PowerForecastData> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(PowerForecastData::getStationCode, powerForecastData.getStationCode())
-                .eq(PowerForecastData::getIndicatorType, powerForecastData.getIndicatorType())
+                .eq(PowerForecastData::getIndexCode, powerForecastData.getIndexCode())
                 .eq(PowerForecastData::getCollectTime, powerForecastData.getCollectTime());
         Long count = powerForecastDataMapper.selectCount(wrapper);
         return count >= 1;

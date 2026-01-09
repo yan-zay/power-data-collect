@@ -1,12 +1,10 @@
 package com.dtxytech.powerdatacollect.core.controller;
 
-import com.dtxytech.powerdatacollect.core.entity.PowerForecastData2;
 import com.dtxytech.powerdatacollect.core.service.test.TestService;
 import com.dtxytech.powerdatacollect.core.task.SyncFetchFileTask;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -35,16 +33,6 @@ public class TestController {
     @PostMapping(value = "/insertData")
     public String insertData(@RequestBody Map<String, String> dto) {
         return testService.insertData(dto);
-    }
-
-    @PostMapping(value = "/insertData2")
-    public String insertData2(@RequestBody Map<String, String> dto) {
-        return testService.insertData2(dto);
-    }
-
-    @GetMapping(value = "/getData2")
-    public List<PowerForecastData2> getData2() {
-        return testService.getData2();
     }
 
     @GetMapping(value = "/test04")

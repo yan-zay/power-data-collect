@@ -21,28 +21,27 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class PowerForecastData {
 
-    @TableField(value = "station_code")
-    private String stationCode;
-
-    private String indicatorType;
-
-    private String forecastTimeStr;
-
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime collectTime;
-
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime forecastTime;
+    @TableField(value = "station_code")
+    private String stationCode;
+    @TableField(value = "index_code")
+    private String indexCode;
+    @TableField(value = "energy_type")
+    private String energyType;
 
-    @TableField(value = "station_id")
-    private String stationId;
-
+    @TableField(value = "asset_code")
+    private String assetCode;
+    @TableField(value = "forecast_value")
+    private String forecastValue;
+    @TableField(value = "order_no")
+    private Integer orderNo;
+    @TableField(value = "file_path")
     private String filePath;
-
+    @TableField(value = "file_name")
     private String fileName;
-
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createTime;
-
-    private String forecastData;
 }

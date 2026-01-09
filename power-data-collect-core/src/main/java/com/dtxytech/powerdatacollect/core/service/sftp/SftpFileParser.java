@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * @Author zay
@@ -102,19 +101,22 @@ public class SftpFileParser {
         LocalDateTime forecastTime = parseForecastTimeStr(forecastTimeStr);
         String stationId = stationService.getStationIdByCode(stationCode);
         log.info("parseForecastFileFromSftp getListDate stationCode:{}， stationId:{}", stationCode, stationId);
-        for (String data : dataLines) {
+        for (int i = 0; i < dataLines.size(); i++) {
+            String data = dataLines.get(i);
             PowerForecastData obj = PowerForecastData.builder()
-                    .stationId(stationId)
-                    .stationCode(stationCode)
-                    .indicatorType(indicatorType.getValue())
-                    .forecastTimeStr(forecastTimeStr != null ? forecastTimeStr : "2000-00-00 00:00:00")
-
                     .collectTime(collectTime)
                     .forecastTime(forecastTime)
+                    .stationCode(stationCode)
+                    .indexCode(indicatorType.getValue())
+                    .energyType("//?")//?
+
+                    .assetCode(stationId)
+                    .forecastValue(data)
+                    .orderNo(i + 1)
+
                     .filePath(filePath)
                     .fileName(filename)
                     .createTime(LocalDateTime.now())
-                    .forecastData(data)
                     .build();
             forecastTime = forecastTime.plusMinutes(15);
             result.add(obj);
