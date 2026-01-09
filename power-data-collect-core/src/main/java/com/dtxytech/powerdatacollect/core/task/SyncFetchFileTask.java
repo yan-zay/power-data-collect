@@ -23,7 +23,7 @@ public class SyncFetchFileTask {
     private final SftpDataSyncService sftpDataSyncService;
 
     // 每10分钟拉一次短期数据
-/*    @Scheduled(cron = "0 0 0/1 * * ? ")
+    @Scheduled(cron = "0 0 0/1 * * ? ")
     public void syncShortTermFile() {
         log.info("Starting syncShortTermFile SFTP sync");
         sftpDataSyncService.syncFileList(IndicatorTypeEnum.DQ);
@@ -43,5 +43,5 @@ public class SyncFetchFileTask {
         CompletableFuture.runAsync(this::syncShortTermFile);
         syncVeryShortTermFile();
         SftpRecursiveDownloader.INITIALIZED = true;
-    }*/
+    }
 }
