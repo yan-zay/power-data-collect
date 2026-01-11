@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Map;
 
@@ -35,7 +36,7 @@ public class TestServiceImpl implements TestService {
                 .energyType(dto.get("energyType"))
 
                 .assetCode(dto.get("assetCode"))
-                .forecastValue(dto.get("forecastValue"))
+                .forecastValue(new BigDecimal(dto.get("forecastValue")))
                 .orderNo(-1)
                 .filePath(dto.get("filePath"))
                 .fileName(dto.get("fileName"))

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -103,6 +104,13 @@ public class SftpFileParser {
         log.info("parseForecastFileFromSftp getListDate stationCode:{}， stationId:{}", stationCode, stationId);
         for (int i = 0; i < dataLines.size(); i++) {
             String data = dataLines.get(i);
+            BigDecimal value = null;
+            try {
+                value = new BigDecimal(data);
+            }catch (Exception e) {
+                log.error("SftpFileParser getListDate value:{}", value, e);
+                continue;
+            }
             PowerForecastData obj = PowerForecastData.builder()
                     .collectTime(collectTime)
                     .forecastTime(forecastTime)
@@ -111,7 +119,7 @@ public class SftpFileParser {
                     .energyType("energyType")//?
 
                     .assetCode(stationId)
-                    .forecastValue(data)
+                    .forecastValue(value)
                     .orderNo(i + 1)
 
                     .filePath(filePath)
