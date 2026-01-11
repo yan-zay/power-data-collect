@@ -4,7 +4,7 @@ server:
     context-path: /power-data-collect
   address: 0.0.0.0
 
-mybatis:
+mybatis-plus:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
@@ -33,7 +33,7 @@ sftp:
   username: sftp
   password: JCDZ@sp.0
   # remoteDir: /home/ies/success
-  remoteDir: /home/ies/success
+  remoteDir: /home/ies/success/MD_Xs
   localDownloadDir: ./downloads
   fileStartDate: "20251001"
 
