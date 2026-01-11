@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -35,7 +36,7 @@ public class PowerForecastData {
     @TableField(value = "asset_code")
     private String assetCode;
     @TableField(value = "forecast_value")
-    private String forecastValue;
+    private BigDecimal forecastValue;
     @TableField(value = "order_no")
     private Integer orderNo;
     @TableField(value = "file_path")
