@@ -12,8 +12,10 @@ import org.springframework.stereotype.Component;
 @Component
 @ConfigurationProperties(prefix = "sftp")
 public class SftpProperties {
+
+    private String region;
     private String host;
-    private int port = 22;
+    private int port;
     private String username;
     private String password;
     private String remoteDir;

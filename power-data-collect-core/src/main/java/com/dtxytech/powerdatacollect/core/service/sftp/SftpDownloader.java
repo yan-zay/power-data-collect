@@ -4,16 +4,16 @@ import com.dtxytech.powerdatacollect.core.config.SftpProperties;
 import com.dtxytech.powerdatacollect.core.entity.PowerForecastData;
 import com.dtxytech.powerdatacollect.core.enums.IndicatorTypeEnum;
 import com.dtxytech.powerdatacollect.core.service.power.PowerForecastDataServiceImpl;
+import com.dtxytech.powerdatacollect.core.task.SyncFetchFileTask;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.ChannelSftp.LsEntry;
 import com.jcraft.jsch.SftpException;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Vector;
@@ -26,16 +26,16 @@ import java.util.Vector;
  * @Date 2025/12/17 16:01
  */
 @Slf4j
-@Component
-@AllArgsConstructor
-public class SftpRecursiveDownloader {
+public abstract class SftpDownloader {
 
     private static final String SEPARATOR = "/";
-    public volatile static boolean INITIALIZED = false;
 
-    private final SftpFileParser sftpFileParser;
-    private final PowerForecastDataServiceImpl powerForecastDataService;
-    private final SftpProperties sftpProperties;
+    @Autowired
+    protected SftpFileParser sftpFileParser;
+    @Autowired
+    protected PowerForecastDataServiceImpl powerForecastDataService;
+    @Autowired
+    protected SftpProperties sftpProperties;
 
     /**
      * 递归下载并解析指定远程目录下的所有文件
@@ -60,29 +60,64 @@ public class SftpRecursiveDownloader {
         entries.sort((o1, o2) -> o2.getFilename().compareTo(o1.getFilename()));
 
         for (LsEntry entry : entries) {
-            String filename = entry.getFilename();
+            String dirName = entry.getFilename();
             // 跳过 "." 和 ".."
-            if (".".equals(filename) || "..".equals(filename)) {
+            if (".".equals(dirName) || "..".equals(dirName)) {
                 continue;
             }
 
-            String fullPath = path + SEPARATOR + filename;
+            String fullPath = path + SEPARATOR + dirName;
             if (entry.getAttrs().isDir()) {
-                if (checkDirDate(fullPath)) {
+                if (checkDirDate(dirName)) {
                     continue;
                 }
                 // 递归进入子目录
                 recurseDownload(sftp, fullPath, indicatorType);
             } else {
                 // 是文件，下载并解析
-                processFile(sftp, path, filename, indicatorType);
+                processFile(sftp, path, dirName, indicatorType);
             }
         }
     }
 
-    private static boolean checkDirDate(String fullPath) {
-        return LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"))
-                .compareTo(SftpFileParser.getPathPart(fullPath, 4)) < 0 && INITIALIZED;
+    /**
+     * 从字符串中提取日期值用于比较
+     * 支持多种日期格式，如yyyyMMdd, yyyy-MM-dd等
+     */
+    private static int extractDateValue(String dateStr) {
+        if (dateStr == null || dateStr.isEmpty()) {
+            return Integer.MIN_VALUE;
+        }
+        // 移除可能的分隔符，只保留数字
+        String numericStr = dateStr.replaceAll("[^0-9]", "");
+        // 尝试转换为整数进行比较，假设格式为yyyyMMdd
+        try {
+            return Integer.parseInt(numericStr);
+        } catch (NumberFormatException e) {
+            // 如果无法解析为数字，返回最小值，这样任何有效日期都会大于它
+            return Integer.MIN_VALUE;
+        }
+    }
+
+    private boolean checkDirDate(String dirName) {
+        // 获取配置的起始日期
+        String fileStartDate = sftpProperties.getFileStartDate();
+
+        int dirDate = extractDateValue(dirName);
+        int startCompareValue = extractDateValue(fileStartDate);
+        if (dirDate < startCompareValue) {
+            return true; // 返回true表示跳过此目录
+        }
+
+        // 如果INITIALIZED为true，只处理今天及以后的日期
+        if (SyncFetchFileTask.INITIALIZED) {
+            int todayValue = extractDateValue(LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")));
+
+            // 如果目录日期小于今天，则跳过
+            return dirDate < todayValue; // 返回true表示跳过此目录
+        }
+
+        return false; // 返回false表示处理此目录
     }
 
     /**

@@ -18,8 +18,7 @@ public class SftpDataSyncService {
 
     private final SftpConnectionManager sftpConnectionManager;
     private final SftpProperties sftpProperties;
-
-    private final SftpRecursiveDownloader sftpRecursiveDownloader;
+    private final SftpDownloader sftpRecursiveDownloader;
 
     public void syncFileList(IndicatorTypeEnum fileType) {
         ChannelSftp sftp = sftpConnectionManager.getCurrentSftp();

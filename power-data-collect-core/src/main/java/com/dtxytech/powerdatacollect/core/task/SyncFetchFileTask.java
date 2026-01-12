@@ -2,7 +2,7 @@ package com.dtxytech.powerdatacollect.core.task;
 
 import com.dtxytech.powerdatacollect.core.enums.IndicatorTypeEnum;
 import com.dtxytech.powerdatacollect.core.service.sftp.SftpDataSyncService;
-import com.dtxytech.powerdatacollect.core.service.sftp.SftpRecursiveDownloader;
+import com.dtxytech.powerdatacollect.core.service.sftp.SftpDownloader;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -20,12 +20,16 @@ import java.util.concurrent.CompletableFuture;
 @AllArgsConstructor
 public class SyncFetchFileTask {
 
+    public volatile static boolean INITIALIZED = false;
     private final SftpDataSyncService sftpDataSyncService;
 
     // 每10分钟拉一次短期数据
     @Scheduled(cron = "0 0 0/1 * * ? ")
     public void syncShortTermFile() {
         log.info("Starting syncShortTermFile SFTP sync");
+        if (!INITIALIZED) {
+            return;
+        }
         sftpDataSyncService.syncFileList(IndicatorTypeEnum.DQ);
         log.info("syncShortTermFile completed");
     }
@@ -34,14 +38,17 @@ public class SyncFetchFileTask {
     @Scheduled(cron = "0 0/5 * * * ? ")
     public void syncVeryShortTermFile() {
         log.info("Starting syncVeryShortTermFile SFTP sync");
+        if (!INITIALIZED) {
+            return;
+        }
         sftpDataSyncService.syncFileList(IndicatorTypeEnum.CDQ);
         log.info("syncVeryShortTermFile sync completed");
     }
 
     @PostConstruct
     public void init() {
-        CompletableFuture.runAsync(this::syncShortTermFile);
-        syncVeryShortTermFile();
-        SftpRecursiveDownloader.INITIALIZED = true;
+        CompletableFuture.runAsync(() -> sftpDataSyncService.syncFileList(IndicatorTypeEnum.DQ));
+        CompletableFuture.runAsync(() -> sftpDataSyncService.syncFileList(IndicatorTypeEnum.CDQ));
+        INITIALIZED = true;
     }
 }
