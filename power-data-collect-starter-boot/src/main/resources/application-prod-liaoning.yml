@@ -11,7 +11,7 @@ spring:
       validationQuery: select 1
 
 sftp:
-  region: neimeng
+  region: liaoning
   host: 150.30.10.1
   port: 22
   username: sftp
