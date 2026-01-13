@@ -1,5 +1,7 @@
 package com.dtxytech.powerdatacollect.core.service.sftp;
 
+import com.dtxytech.powerdatacollect.core.enums.IndicatorTypeEnum;
+import com.jcraft.jsch.ChannelSftp;
 import lombok.AllArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
@@ -14,4 +16,8 @@ import org.springframework.stereotype.Component;
 public class SftpDownloaderLiaoning extends SftpDownloader {
 
 
+    @Override
+    protected void downloadAndParseAllFile(ChannelSftp sftp, String remoteDir, IndicatorTypeEnum indicatorType) {
+
+    }
 }
