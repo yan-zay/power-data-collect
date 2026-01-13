@@ -3,8 +3,11 @@ package com.dtxytech.powerdatacollect.core.service.sftp;
 import com.dtxytech.powerdatacollect.core.entity.PowerForecastData;
 import com.dtxytech.powerdatacollect.core.enums.IndicatorTypeEnum;
 import com.dtxytech.powerdatacollect.core.service.station.StationService;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -23,14 +26,17 @@ import java.util.regex.Pattern;
  * @Date 2025/12/16 17:26
  */
 @Slf4j
-public abstract class SftpFileParser {
+@Component
+@AllArgsConstructor
+@ConditionalOnProperty(name = "sftp.region", havingValue = "guangxi", matchIfMissing = false)
+public class SftpFileParserGuangxi extends SftpFileParser {
 
-    @Autowired
     private StationService stationService;
 
     /**
      * 从远程 SFTP 读取并解析预测数据文件（适配两列格式）
      */
+    @Override
     public List<PowerForecastData> parseForecastFileFromSftp(IndicatorTypeEnum indicatorType, InputStream in,
                                                              String filePath, String filename) {
         // === 2. 流式读取并解析 ===
@@ -94,6 +100,7 @@ public abstract class SftpFileParser {
         }
     }
 
+    @Override
     protected List<PowerForecastData> getListDate(IndicatorTypeEnum indicatorType, String filePath, String filename,
                                                 String stationCode, String forecastTimeStr, List<String> dataLines) {
         List<PowerForecastData> result = new ArrayList<>();
@@ -154,6 +161,7 @@ public abstract class SftpFileParser {
      * @param forecastTimeStr 原始时间字符串
      * @return 解析后的 LocalDateTime 对象
      */
+    @Override
     public LocalDateTime parseForecastTimeStr(String forecastTimeStr) {
         if (forecastTimeStr == null || forecastTimeStr.isEmpty()) {
             return null;
@@ -177,6 +185,7 @@ public abstract class SftpFileParser {
         }
     }
 
+    @Override
     public String getPathPart(String filePath, int part) {
         if (filePath == null || filePath.isEmpty()) {
             return "";

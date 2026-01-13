@@ -1,0 +1,22 @@
+spring:
+  datasource:
+    url: jdbc:mysql://10.220.42.139:9030/datalab?useSSL=false&serverTimezone=Asia/Shanghai&allowMultiQueries=true
+    username: root
+    password: Xnysc@ds&2025
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    # Druid连接池配置
+    druid:
+      initialSize: 10
+      maxActive: 50
+      validationQuery: select 1
+
+sftp:
+  region: longjiang
+  host: 150.30.10.1
+  port: 22
+  username: sftp
+  password: JCDZ@sp.0
+  remoteDir: /home/ies/success
+  localDownloadDir: ./downloads
+  fileStartDate: "20251001"
+

@@ -39,9 +39,6 @@ public abstract class SftpDownloader {
 
     /**
      * 递归下载并解析指定远程目录下的所有文件
-     *
-     * @param remoteDir 远程目录路径（如 "/data/logs"）
-     * @param indicatorType 指标类型
      */
     public void downloadAndParseAllFile(ChannelSftp sftp, String remoteDir, IndicatorTypeEnum indicatorType) {
         try {
@@ -54,7 +51,7 @@ public abstract class SftpDownloader {
     /**
      * 递归遍历远程目录
      */
-    private void recurseDownload(ChannelSftp sftp, String path, IndicatorTypeEnum indicatorType) throws SftpException, IOException {
+    protected void recurseDownload(ChannelSftp sftp, String path, IndicatorTypeEnum indicatorType) throws SftpException, IOException {
         Vector<LsEntry> entries = sftp.ls(path);
         if (entries == null) return;
         entries.sort((o1, o2) -> o2.getFilename().compareTo(o1.getFilename()));
@@ -68,7 +65,7 @@ public abstract class SftpDownloader {
 
             String fullPath = path + SEPARATOR + dirName;
             if (entry.getAttrs().isDir()) {
-                if (checkDirDate(dirName)) {
+                if (checkDir(dirName)) {
                     continue;
                 }
                 // 递归进入子目录
@@ -81,25 +78,10 @@ public abstract class SftpDownloader {
     }
 
     /**
-     * 从字符串中提取日期值用于比较
-     * 支持多种日期格式，如yyyyMMdd, yyyy-MM-dd等
+     * 检查及过滤不需要的文件夹
+     * 目录日期是否小于起始日期
      */
-    private static int extractDateValue(String dateStr) {
-        if (dateStr == null || dateStr.isEmpty()) {
-            return Integer.MIN_VALUE;
-        }
-        // 移除可能的分隔符，只保留数字
-        String numericStr = dateStr.replaceAll("[^0-9]", "");
-        // 尝试转换为整数进行比较，假设格式为yyyyMMdd
-        try {
-            return Integer.parseInt(numericStr);
-        } catch (NumberFormatException e) {
-            // 如果无法解析为数字，返回最小值，这样任何有效日期都会大于它
-            return Integer.MIN_VALUE;
-        }
-    }
-
-    private boolean checkDirDate(String dirName) {
+    protected boolean checkDir(String dirName) {
         // 获取配置的起始日期
         String fileStartDate = sftpProperties.getFileStartDate();
 
@@ -121,7 +103,26 @@ public abstract class SftpDownloader {
     }
 
     /**
-     * 下载单个文件并调用解析逻辑（预留空方法）
+     * 从字符串中提取日期值用于比较
+     * 支持多种日期格式，如yyyyMMdd, yyyy-MM-dd等
+     */
+    private static int extractDateValue(String dateStr) {
+        if (dateStr == null || dateStr.isEmpty()) {
+            return Integer.MIN_VALUE;
+        }
+        // 移除可能的分隔符，只保留数字
+        String numericStr = dateStr.replaceAll("[^0-9]", "");
+        // 尝试转换为整数进行比较，假设格式为yyyyMMdd
+        try {
+            return Integer.parseInt(numericStr);
+        } catch (NumberFormatException e) {
+            // 如果无法解析为数字，返回最小值，这样任何有效日期都会大于它
+            return Integer.MIN_VALUE;
+        }
+    }
+
+    /**
+     * 下载单个文件并调用解析逻辑
      */
     private void processFile(ChannelSftp sftp, String path, String filename, IndicatorTypeEnum indicatorType) throws SftpException, IOException {
         String fullPath = path + SEPARATOR + filename;
@@ -132,29 +133,9 @@ public abstract class SftpDownloader {
             // 预留：文件内容已通过 InputStream 获取
             // 此处可调用业务解析逻辑
             List<PowerForecastData> list = sftpFileParser.parseForecastFileFromSftp(indicatorType, in, path, filename);
-            log.info("sftpFileParser.parseForecastFileFromSftp, Parsing file: {}, data size:{}", filename, list.size());
-            if (list.isEmpty()) {
-                return;
-            }
-            boolean exist = powerForecastDataService.checkDuplicate(list.get(0));
-            if (exist) {
-                log.info("powerForecastDataService.checkDuplicate exist, path:{}, filename:{}", path, filename);
-                return;
-            }
-            boolean saved = powerForecastDataService.saveBatch(list);
-            if (saved) {
-                log.error("powerForecastDataService.saveBatch error, list:{}", list);
-            }
+            log.info("sftpFileParser.parseForecastFileFromSftp, Parsing filename: {}, list.size:{}", filename, list.size());
+            powerForecastDataService.saveList(list);
         }
     }
 
-    /**
-     * 【预留】解析文件内容的方法（由业务方实现）
-     *
-     * @param remoteFilePath 远程文件路径（用于日志或元数据）
-     * @param contentStream  文件内容输入流
-     */
-    protected void parseFileContent(String remoteFilePath, InputStream contentStream) {
-        // TODO: 实现具体的文件解析逻辑（如 JSON 解析、日志分析等）
-    }
 }
