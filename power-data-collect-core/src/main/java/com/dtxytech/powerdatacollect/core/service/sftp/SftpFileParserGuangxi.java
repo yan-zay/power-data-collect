@@ -100,7 +100,6 @@ public class SftpFileParserGuangxi extends SftpFileParser {
         }
     }
 
-    @Override
     protected List<PowerForecastData> getListDate(IndicatorTypeEnum indicatorType, String filePath, String filename,
                                                 String stationCode, String forecastTimeStr, List<String> dataLines) {
         List<PowerForecastData> result = new ArrayList<>();
@@ -138,7 +137,7 @@ public class SftpFileParserGuangxi extends SftpFileParser {
         return result;
     }
 
-    private static String getEntityTime(String line) {
+    protected String getEntityTime(String line) {
         Pattern timePattern = Pattern.compile("time='([\\d-_:]+)'");
         Matcher matcher = timePattern.matcher(line);
         if (matcher.find()) {
@@ -161,7 +160,6 @@ public class SftpFileParserGuangxi extends SftpFileParser {
      * @param forecastTimeStr 原始时间字符串
      * @return 解析后的 LocalDateTime 对象
      */
-    @Override
     public LocalDateTime parseForecastTimeStr(String forecastTimeStr) {
         if (forecastTimeStr == null || forecastTimeStr.isEmpty()) {
             return null;
@@ -185,7 +183,6 @@ public class SftpFileParserGuangxi extends SftpFileParser {
         }
     }
 
-    @Override
     public String getPathPart(String filePath, int part) {
         if (filePath == null || filePath.isEmpty()) {
             return "";

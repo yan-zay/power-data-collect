@@ -99,7 +99,6 @@ public class SftpFileParserLiaoning extends SftpFileParser {
         }
     }
 
-    @Override
     protected List<PowerForecastData> getListDate(IndicatorTypeEnum indicatorType, String filePath, String filename,
                                                 String stationCode, String forecastTimeStr, List<String> dataLines) {
         List<PowerForecastData> result = new ArrayList<>();
@@ -137,19 +136,11 @@ public class SftpFileParserLiaoning extends SftpFileParser {
         return result;
     }
 
-    private static String getEntityTime(String line) {
+    protected String getEntityTime(String line) {
         Pattern timePattern = Pattern.compile("time='([\\d-_:]+)'");
         Matcher matcher = timePattern.matcher(line);
         if (matcher.find()) {
             return matcher.group(1);
-/*            // 根据字符串长度判断是哪种格式
-            if (timeStr.length() == 16) {  // "yyyy-MM-dd_HH:mm" 格式
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH:mm");
-                return LocalDateTime.parse(timeStr, formatter);
-            } else if (timeStr.length() == 19) {  // "yyyy-MM-dd_HH:mm:ss" 格式
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH:mm:ss");
-                return LocalDateTime.parse(timeStr, formatter);
-            }*/
         }
         throw new IllegalArgumentException("无法解析时间字符串: " + line);
     }
@@ -160,7 +151,6 @@ public class SftpFileParserLiaoning extends SftpFileParser {
      * @param forecastTimeStr 原始时间字符串
      * @return 解析后的 LocalDateTime 对象
      */
-    @Override
     public LocalDateTime parseForecastTimeStr(String forecastTimeStr) {
         if (forecastTimeStr == null || forecastTimeStr.isEmpty()) {
             return null;
@@ -184,7 +174,6 @@ public class SftpFileParserLiaoning extends SftpFileParser {
         }
     }
 
-    @Override
     public String getPathPart(String filePath, int part) {
         if (filePath == null || filePath.isEmpty()) {
             return "";
