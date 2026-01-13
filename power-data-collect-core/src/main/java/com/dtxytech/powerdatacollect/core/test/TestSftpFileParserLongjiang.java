@@ -1,4 +1,4 @@
-package com.dtxytech.powerdatacollect.core;
+package com.dtxytech.powerdatacollect.core.test;
 
 import com.dtxytech.powerdatacollect.core.entity.PowerForecastData;
 import com.dtxytech.powerdatacollect.core.enums.IndicatorTypeEnum;
