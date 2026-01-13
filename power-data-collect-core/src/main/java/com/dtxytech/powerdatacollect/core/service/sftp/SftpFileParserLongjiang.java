@@ -68,25 +68,11 @@ public class SftpFileParserLongjiang extends SftpFileParser {
                     continue;
                 }
 
-                // 处理不同的数据块类型
-                if (line.contains("<RunningCapacity::")) {
-                    result.addAll(parseRunningCapacityBlock(reader, indicatorType, filePath, filename, stationCode, forecastTimeStr));
-                } else if (line.contains("<UltraShortTermForcast_P2P::")) {
-                    result.addAll(parseUltraShortTermForcastBlock(reader, indicatorType, filePath, filename, stationCode, forecastTimeStr, "P2P"));
-                } else if (line.contains("<UltraShortTermForcast_V2P::")) {
-                    result.addAll(parseUltraShortTermForcastBlock(reader, indicatorType, filePath, filename, stationCode, forecastTimeStr, "V2P"));
-                } else if (line.contains("<UltraShortTermForcast_TP::")) {
-                    result.addAll(parseUltraShortTermForcastBlock(reader, indicatorType, filePath, filename, stationCode, forecastTimeStr, "TP"));
-                } else if (line.contains("<UltraShortTermForcast_AP::")) {
-                    result.addAll(parseUltraShortTermForcastBlock(reader, indicatorType, filePath, filename, stationCode, forecastTimeStr, "AP"));
-                } else if (line.contains("<ShortTermForcast::")) {
+                // 根据指标类型选择解析特定的数据块
+                if (indicatorType == IndicatorTypeEnum.DQ && line.contains("<ShortTermForcast::")) {
                     result.addAll(parseShortTermForcastBlock(reader, indicatorType, filePath, filename, stationCode, forecastTimeStr));
-                } else if (line.contains("<ShortTermForcast_AP::")) {
-                    result.addAll(parseShortTermForcastAPBlock(reader, indicatorType, filePath, filename, stationCode, forecastTimeStr));
-                } else if (line.contains("<Capacity::")) {
-                    result.addAll(parseCapacityBlock(reader, indicatorType, filePath, filename, stationCode, forecastTimeStr));
-                } else if (line.contains("<NWPDATA::")) {
-                    result.addAll(parseNWPDataBlock(reader, indicatorType, filePath, filename, stationCode, forecastTimeStr));
+                } else if (indicatorType == IndicatorTypeEnum.CDQ && line.contains("<UltraShortTermForcast_P2P::")) {
+                    result.addAll(parseUltraShortTermForcastP2PBlock(reader, indicatorType, filePath, filename, stationCode, forecastTimeStr));
                 }
             }
 
@@ -111,93 +97,7 @@ public class SftpFileParserLongjiang extends SftpFileParser {
     }
 
     /**
-     * 解析实时开机容量数据块
-     */
-    private List<PowerForecastData> parseRunningCapacityBlock(BufferedReader reader, IndicatorTypeEnum indicatorType, 
-                                                              String filePath, String filename, String stationCode, 
-                                                              String forecastTimeStr) throws java.io.IOException {
-        List<PowerForecastData> result = new ArrayList<>();
-        String line;
-        
-        while ((line = reader.readLine()) != null) {
-            line = line.trim();
-            
-            if (line.equals("</RunningCapacity::" + stationCode + ">")) {
-                break; // 结束当前数据块
-            }
-            
-            if (line.startsWith("#")) {
-                String[] parts = line.split("\\s+");
-                if (parts.length >= 2) {
-                    String orderNoStr = parts[0].substring(1); // 去掉#号
-                    String valueStr = parts[1];
-                    
-                    try {
-                        BigDecimal value = new BigDecimal(valueStr);
-                        Integer orderNo = Integer.parseInt(orderNoStr);
-                        
-                        PowerForecastData obj = buildPowerForecastData(
-                            indicatorType, filePath, filename, stationCode, 
-                            forecastTimeStr, value, orderNo, "RunningCapacity");
-                            
-                        result.add(obj);
-                    } catch (NumberFormatException e) {
-                        log.warn("无法解析实时开机容量数据: {}", line);
-                    }
-                }
-            }
-        }
-        
-        return result;
-    }
-
-    /**
-     * 解析超短期预测功率数据块
-     */
-    private List<PowerForecastData> parseUltraShortTermForcastBlock(BufferedReader reader, IndicatorTypeEnum indicatorType, 
-                                                                 String filePath, String filename, String stationCode, 
-                                                                 String forecastTimeStr, String forecastType) throws java.io.IOException {
-        List<PowerForecastData> result = new ArrayList<>();
-        String line;
-        LocalDateTime baseForecastTime = parseForecastTimeStr(forecastTimeStr);
-        
-        while ((line = reader.readLine()) != null) {
-            line = line.trim();
-            
-            if (line.contains("</UltraShortTermForcast_" + forecastType + "::" + stationCode + ">")) {
-                break; // 结束当前数据块
-            }
-            
-            if (line.startsWith("#")) {
-                String[] parts = line.split("\\s+");
-                if (parts.length >= 2) {
-                    String orderNoStr = parts[0].substring(1); // 去掉#号
-                    String valueStr = parts[1];
-                    
-                    try {
-                        BigDecimal value = new BigDecimal(valueStr);
-                        Integer orderNo = Integer.parseInt(orderNoStr);
-                        
-                        PowerForecastData obj = buildPowerForecastData(
-                            indicatorType, filePath, filename, stationCode, 
-                            forecastTimeStr, value, orderNo, "UltraShortTermForcast_" + forecastType);
-                            
-                        // 超短期预测通常是未来15分钟间隔的数据
-                        obj.setForecastTime(baseForecastTime.plusMinutes((orderNo - 1) * 15));
-                            
-                        result.add(obj);
-                    } catch (NumberFormatException e) {
-                        log.warn("无法解析超短期预测功率数据: {}", line);
-                    }
-                }
-            }
-        }
-        
-        return result;
-    }
-
-    /**
-     * 解析短期预测功率数据块
+     * 解析短期预测功率数据块 (DQ - ShortTermForcast)
      */
     private List<PowerForecastData> parseShortTermForcastBlock(BufferedReader reader, IndicatorTypeEnum indicatorType, 
                                                             String filePath, String filename, String stationCode, 
@@ -205,6 +105,7 @@ public class SftpFileParserLongjiang extends SftpFileParser {
         List<PowerForecastData> result = new ArrayList<>();
         String line;
         LocalDateTime baseForecastTime = parseForecastTimeStr(forecastTimeStr);
+        int orderNo = 1;
         
         while ((line = reader.readLine()) != null) {
             line = line.trim();
@@ -215,22 +116,21 @@ public class SftpFileParserLongjiang extends SftpFileParser {
             
             if (line.startsWith("#")) {
                 String[] parts = line.split("\\s+");
-                if (parts.length >= 3) { // 至少包含序号、预测值和装机容量
-                    String orderNoStr = parts[0].substring(1); // 去掉#号
+                if (parts.length >= 2) { // 包含序号和预测值
                     String valueStr = parts[1];
                     
                     try {
                         BigDecimal value = new BigDecimal(valueStr);
-                        Integer orderNo = Integer.parseInt(orderNoStr);
                         
                         PowerForecastData obj = buildPowerForecastData(
                             indicatorType, filePath, filename, stationCode, 
-                            forecastTimeStr, value, orderNo, "ShortTermForcast");
+                            forecastTimeStr, value, orderNo, getEnergyTypeFromFile(filename));
                             
                         // 短期预测通常是未来15分钟间隔的数据
-                        obj.setForecastTime(baseForecastTime.plusHours(orderNo - 1));
+                        obj.setForecastTime(baseForecastTime.plusMinutes((orderNo - 1) * 15L));
                             
                         result.add(obj);
+                        orderNo++;
                     } catch (NumberFormatException e) {
                         log.warn("无法解析短期预测功率数据: {}", line);
                     }
@@ -242,42 +142,42 @@ public class SftpFileParserLongjiang extends SftpFileParser {
     }
 
     /**
-     * 解析短期预测可用功率数据块
+     * 解析超短期预测功率P2P数据块 (CDQ - UltraShortTermForcast_P2P)
      */
-    private List<PowerForecastData> parseShortTermForcastAPBlock(BufferedReader reader, IndicatorTypeEnum indicatorType, 
-                                                              String filePath, String filename, String stationCode, 
-                                                              String forecastTimeStr) throws java.io.IOException {
+    private List<PowerForecastData> parseUltraShortTermForcastP2PBlock(BufferedReader reader, IndicatorTypeEnum indicatorType, 
+                                                                 String filePath, String filename, String stationCode, 
+                                                                 String forecastTimeStr) throws java.io.IOException {
         List<PowerForecastData> result = new ArrayList<>();
         String line;
         LocalDateTime baseForecastTime = parseForecastTimeStr(forecastTimeStr);
+        int orderNo = 1;
         
         while ((line = reader.readLine()) != null) {
             line = line.trim();
             
-            if (line.equals("</ShortTermForcast_AP::" + stationCode + ">")) {
+            if (line.equals("</UltraShortTermForcast_P2P::" + stationCode + ">")) {
                 break; // 结束当前数据块
             }
             
             if (line.startsWith("#")) {
                 String[] parts = line.split("\\s+");
-                if (parts.length >= 2) {
-                    String orderNoStr = parts[0].substring(1); // 去掉#号
+                if (parts.length >= 2) { // 包含序号和预测值
                     String valueStr = parts[1];
                     
                     try {
                         BigDecimal value = new BigDecimal(valueStr);
-                        Integer orderNo = Integer.parseInt(orderNoStr);
                         
                         PowerForecastData obj = buildPowerForecastData(
                             indicatorType, filePath, filename, stationCode, 
-                            forecastTimeStr, value, orderNo, "ShortTermForcast_AP");
+                            forecastTimeStr, value, orderNo, getEnergyTypeFromFile(filename));
                             
-                        // 短期预测通常是未来15分钟间隔的数据
-                        obj.setForecastTime(baseForecastTime.plusHours(orderNo - 1));
+                        // 超短期预测通常是未来15分钟间隔的数据
+                        obj.setForecastTime(baseForecastTime.plusMinutes((orderNo - 1) * 15L));
                             
                         result.add(obj);
+                        orderNo++;
                     } catch (NumberFormatException e) {
-                        log.warn("无法解析短期预测可用功率数据: {}", line);
+                        log.warn("无法解析超短期预测功率P2P数据: {}", line);
                     }
                 }
             }
@@ -287,101 +187,27 @@ public class SftpFileParserLongjiang extends SftpFileParser {
     }
 
     /**
-     * 解析装机容量数据块
+     * 根据文件扩展名确定energyType
      */
-    private List<PowerForecastData> parseCapacityBlock(BufferedReader reader, IndicatorTypeEnum indicatorType, 
-                                                    String filePath, String filename, String stationCode, 
-                                                    String forecastTimeStr) throws java.io.IOException {
-        List<PowerForecastData> result = new ArrayList<>();
-        String line;
-        
-        while ((line = reader.readLine()) != null) {
-            line = line.trim();
-            
-            if (line.equals("</Capacity::" + stationCode + ">")) {
-                break; // 结束当前数据块
-            }
-            
-            if (line.startsWith("#")) {
-                String[] parts = line.split("\\s+");
-                if (parts.length >= 2) {
-                    String orderNoStr = parts[0].substring(1); // 去掉#号
-                    String valueStr = parts[1];
-                    
-                    try {
-                        BigDecimal value = new BigDecimal(valueStr);
-                        Integer orderNo = Integer.parseInt(orderNoStr);
-                        
-                        PowerForecastData obj = buildPowerForecastData(
-                            indicatorType, filePath, filename, stationCode, 
-                            forecastTimeStr, value, orderNo, "Capacity");
-                            
-                        result.add(obj);
-                    } catch (NumberFormatException e) {
-                        log.warn("无法解析装机容量数据: {}", line);
-                    }
-                }
+    private String getEnergyTypeFromFile(String filename) {
+        if (filename != null) {
+            filename = filename.toLowerCase();
+            if (filename.endsWith(".wpd")) {
+                return "wind";
+            } else if (filename.endsWith(".ppd")) {
+                return "pv";
             }
         }
-        
-        return result;
-    }
-
-    /**
-     * 解析数值天气预报数据块
-     */
-    private List<PowerForecastData> parseNWPDataBlock(BufferedReader reader, IndicatorTypeEnum indicatorType,
-                                                   String filePath, String filename, String stationCode, 
-                                                   String forecastTimeStr) throws java.io.IOException {
-        List<PowerForecastData> result = new ArrayList<>();
-        String line;
-        LocalDateTime baseForecastTime = parseForecastTimeStr(forecastTimeStr);
-        
-        while ((line = reader.readLine()) != null) {
-            line = line.trim();
-            
-            if (line.equals("</NWPDATA::" + stationCode + ">")) {
-                break; // 结束当前数据块
-            }
-            
-            if (line.startsWith("#")) {
-                String[] parts = line.split("\\s+");
-                if (parts.length >= 2) {
-                    String orderNoStr = parts[0].substring(1); // 去掉#号
-                    // 对于NWP数据，我们可以存储风速作为预测值
-                    if (parts.length >= 4) { // 时间 高度 风速 方向
-                        String windSpeedStr = parts[3];
-                        
-                        try {
-                            BigDecimal value = new BigDecimal(windSpeedStr);
-                            Integer orderNo = Integer.parseInt(orderNoStr);
-                            
-                            PowerForecastData obj = buildPowerForecastData(
-                                indicatorType, filePath, filename, stationCode, 
-                                forecastTimeStr, value, orderNo, "NWP_WindSpeed");
-                                
-                            // NWP数据通常是每小时的数据点
-                            obj.setForecastTime(baseForecastTime.plusHours(orderNo - 1));
-                                
-                            result.add(obj);
-                        } catch (NumberFormatException e) {
-                            log.warn("无法解析NWP数据: {}", line);
-                        }
-                    }
-                }
-            }
-        }
-        
-        return result;
+        return "unknown";
     }
 
     /**
      * 构建PowerForecastData对象
      */
-    private PowerForecastData buildPowerForecastData(IndicatorTypeEnum indicatorType, String filePath,
+    private PowerForecastData buildPowerForecastData(IndicatorTypeEnum indicatorType, String filePath, 
                                                      String filename, String stationCode, 
                                                      String forecastTimeStr, BigDecimal value, 
-                                                     Integer orderNo, String dataType) {
+                                                     Integer orderNo, String energyType) {
         LocalDateTime collectTime = parseForecastTimeStr(forecastTimeStr);
         String stationId = stationService.getStationIdByCode(stationCode);
         
@@ -390,7 +216,7 @@ public class SftpFileParserLongjiang extends SftpFileParser {
                 .forecastTime(collectTime) // 初始设置为相同时间，后续根据具体数据类型调整
                 .stationCode(stationCode)
                 .indexCode(indicatorType.getValue())
-                .energyType(dataType)
+                .energyType(energyType)
                 .assetCode(stationId)
                 .forecastValue(value)
                 .orderNo(orderNo)
@@ -400,7 +226,7 @@ public class SftpFileParserLongjiang extends SftpFileParser {
                 .build();
     }
 
-    protected String getEntityTime(String line) {
+    private static String getEntityTime(String line) {
         Pattern timePattern = Pattern.compile("time='([\\d-_:]+)'");
         Matcher matcher = timePattern.matcher(line);
         if (matcher.find()) {
