@@ -1,10 +1,14 @@
 package com.dtxytech.powerdatacollect.core.service.sftp;
 
 import com.dtxytech.powerdatacollect.core.entity.PowerForecastData;
+import com.dtxytech.powerdatacollect.core.enums.EnergyTypeStationCodeEnum;
 import com.dtxytech.powerdatacollect.core.enums.IndicatorTypeEnum;
 import com.dtxytech.powerdatacollect.core.service.station.StationService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.dom4j.Document;
+import org.dom4j.Element;
+import org.dom4j.io.SAXReader;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
@@ -40,53 +44,17 @@ public class SftpFileParserLiaoning extends SftpFileParser {
                                                              String filePath, String filename) {
         // === 2. 流式读取并解析 ===
         try {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
-
-            String line;
             boolean inDataBlock = false;
             List<String> dataLines = new ArrayList<>();
             String forecastTimeStr = null;
-
-            while ((line = reader.readLine()) != null) {
-                line = line.trim();
-
-                if (line.isEmpty()) continue;
-
-                // 跳过注释行
-                if (line.startsWith("//")) {
-                    continue;
-                }
-
-                // 解析 Entity 行，提取 type 和 time
-                if (line.startsWith("<!") && line.contains("time=")) {
-                    forecastTimeStr = getEntityTime(line);
-                    continue;
-                }
-
-                // 进入数据块
-                if (line.contains("<forecastdata::")) {
-                    inDataBlock = true;
-                    continue;
-                }
-
-                // 离开数据块
-                if (line.equals("</forecastdata::DTCG>")) {
-                    inDataBlock = false;
-                    continue;
-                }
-
-                // 跳过表头行（以 @ 开头）
-                if (inDataBlock && line.startsWith("@")) {
-                    continue;
-                }
-
-                // 收集有效数据行（以 # 开头）
-                if (inDataBlock && line.startsWith("#")) {
-                    String[] cols = line.split("\t");
-                    if (cols.length >= 2) {
-                        dataLines.add(cols[1]); // "0.65"
-                    }
-                }
+            BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
+            SAXReader saxReader = new SAXReader();
+            Document document = saxReader.read(reader);
+            Element rootElement = document.getRootElement();
+            List<Element> rowList = rootElement.elements("Row");
+            for (Element rowElement : rowList) {
+                String YG = rowElement.elementTextTrim("YG");
+                dataLines.add(YG);
             }
             // 推断 stationId：从 fileName 提取前缀（如 DTDL4_... → DTDL4）
             String stationCode = getPathPart(filePath, 4);
@@ -100,8 +68,11 @@ public class SftpFileParserLiaoning extends SftpFileParser {
     }
 
     protected List<PowerForecastData> getListDate(IndicatorTypeEnum indicatorType, String filePath, String filename,
-                                                String stationCode, String forecastTimeStr, List<String> dataLines) {
+                                                  String stationCode, String forecastTimeStr, List<String> dataLines) {
         List<PowerForecastData> result = new ArrayList<>();
+        String[] parts = filePath.split("[\\\\/]");
+        String lastPart = parts[parts.length - 1];
+        forecastTimeStr=filename.split("_")[1];
         LocalDateTime collectTime = parseForecastTimeStr(forecastTimeStr);
         LocalDateTime forecastTime = parseForecastTimeStr(forecastTimeStr);
         String stationId = stationService.getStationIdByCode(stationCode);
@@ -119,8 +90,8 @@ public class SftpFileParserLiaoning extends SftpFileParser {
                     .collectTime(collectTime)
                     .forecastTime(forecastTime)
                     .stationCode(stationCode)
-                    .indexCode(indicatorType.getValue())
-                    .energyType("energyType")//?
+                    .indexCode(IndicatorTypeEnum.DQ.getName().toUpperCase().equals(lastPart)==true?IndicatorTypeEnum.DQ.getValue():IndicatorTypeEnum.CDQ.getValue())
+                    .energyType(EnergyTypeStationCodeEnum.getByStationCode(stationCode))//?
 
                     .assetCode(stationId)
                     .forecastValue(value)
@@ -136,7 +107,7 @@ public class SftpFileParserLiaoning extends SftpFileParser {
         return result;
     }
 
-    protected String getEntityTime(String line) {
+    private static String getEntityTime(String line) {
         Pattern timePattern = Pattern.compile("time='([\\d-_:]+)'");
         Matcher matcher = timePattern.matcher(line);
         if (matcher.find()) {
@@ -151,6 +122,7 @@ public class SftpFileParserLiaoning extends SftpFileParser {
      * @param forecastTimeStr 原始时间字符串
      * @return 解析后的 LocalDateTime 对象
      */
+    @Override
     public LocalDateTime parseForecastTimeStr(String forecastTimeStr) {
         if (forecastTimeStr == null || forecastTimeStr.isEmpty()) {
             return null;

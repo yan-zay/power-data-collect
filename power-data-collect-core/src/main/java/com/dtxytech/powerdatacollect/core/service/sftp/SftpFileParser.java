@@ -24,8 +24,7 @@ public abstract class SftpFileParser {
     /**
      * 从远程 SFTP 读取并解析预测数据文件（适配两列格式）
      */
-    public abstract List<PowerForecastData> parseForecastFileFromSftp(IndicatorTypeEnum indicatorType, InputStream in,
-                                                             String filePath, String filename);
+    public abstract List<PowerForecastData> parseForecastFileFromSftp(IndicatorTypeEnum indicatorType, InputStream in, String filePath, String filename);
 
     /**
      * 根据指标类型统一解析日期格式为 LocalDateTime
