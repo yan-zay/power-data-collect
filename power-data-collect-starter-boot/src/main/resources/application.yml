@@ -25,7 +25,3 @@ spring:
       test-while-idle: true
       test-on-borrow: true
       keep-alive: true
-
-
-sftp:
-  region: guangxi
