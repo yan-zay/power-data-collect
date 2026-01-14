@@ -40,7 +40,7 @@ public class TestSftpFileParserGuangxi {
 
         if (tempPath != null) {
             try {
-                List<PowerForecastData> results = parser.parseFile(tempPath.toString());
+                List<PowerForecastData> results = parser.parseFile(null, tempPath.toString());
 
                 if (results != null) {
                     log.info("DQ文件解析结果数量: {}", results.size());
@@ -75,7 +75,7 @@ public class TestSftpFileParserGuangxi {
 
         if (tempPath != null) {
             try {
-                List<PowerForecastData> results = parser.parseFile(tempPath.toString());
+                List<PowerForecastData> results = parser.parseFile(null, tempPath.toString());
 
                 if (results != null) {
                     log.info("CDQ文件解析结果数量: {}", results.size());

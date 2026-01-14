@@ -3,6 +3,7 @@ package com.dtxytech.powerdatacollect.core.service.sftp;
 import com.dtxytech.powerdatacollect.core.entity.PowerForecastData;
 import com.dtxytech.powerdatacollect.core.enums.IndicatorTypeEnum;
 import com.dtxytech.powerdatacollect.core.service.station.StationService;
+import com.jcraft.jsch.ChannelSftp;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -34,7 +35,7 @@ public class SftpFileParserNeimeng extends SftpFileParser {
     private StationService stationService;
 
     @Override
-    public List<PowerForecastData> parseFile(String path) {
+    public List<PowerForecastData> parseFile(ChannelSftp sftp, String path) {
         // 从路径中提取文件名和目录信息
         String fileName = getFileName(path);
         IndicatorTypeEnum indicatorType = determineIndicatorTypeFromFileName(fileName);
@@ -43,7 +44,7 @@ public class SftpFileParserNeimeng extends SftpFileParser {
             return new ArrayList<>();
         }
 
-        try (InputStream in = Files.newInputStream(Paths.get(path))) {
+        try (InputStream in = sftp.get(path)) {
             return parseForecastFileFromSftp(indicatorType, in, path, fileName);
         } catch (Exception e) {
             log.error("SftpFileParserNeimeng 解析文件失败: {}", path, e);

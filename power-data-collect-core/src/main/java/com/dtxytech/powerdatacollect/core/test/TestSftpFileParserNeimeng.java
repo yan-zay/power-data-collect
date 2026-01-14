@@ -1,7 +1,6 @@
 package com.dtxytech.powerdatacollect.core.test;
 
 import com.dtxytech.powerdatacollect.core.entity.PowerForecastData;
-import com.dtxytech.powerdatacollect.core.enums.IndicatorTypeEnum;
 import com.dtxytech.powerdatacollect.core.service.sftp.SftpFileParser;
 import com.dtxytech.powerdatacollect.core.service.sftp.SftpFileParserNeimeng;
 import com.dtxytech.powerdatacollect.core.service.station.StationService;
@@ -39,7 +38,7 @@ public class TestSftpFileParserNeimeng {
 
         if (tempPath != null) {
             try {
-                List<PowerForecastData> results = parser.parseFile(tempPath.toString());
+                List<PowerForecastData> results = parser.parseFile(null, tempPath.toString());
 
                 if (results != null) {
                     System.out.println("DQ文件解析结果数量: " + results.size());
@@ -96,7 +95,7 @@ public class TestSftpFileParserNeimeng {
 
         if (tempPath != null) {
             try {
-                List<PowerForecastData> results = parser.parseFile(tempPath.toString());
+                List<PowerForecastData> results = parser.parseFile(null, tempPath.toString());
 
                 if (results != null) {
                     System.out.println("CDQ文件解析结果数量: " + results.size());

@@ -35,17 +35,17 @@ public class SftpDataSyncService {
             List<String> pathList = sftpRecursiveDownloader.getAllFilePath(indicatorType, sftp, sftpProperties.getRemoteDir());
             List<List<String>> batchList = Lists.partition(pathList, BATCH_SIZE);
             for (List<String> batch : batchList) {
-                processPathList(batch);
+                processPathList(sftp, batch);
             }
         } catch (Exception e) {
             log.error("SftpDataSyncService syncFileList , indicatorType: {}, sftp: {}, remoteDir: {}", indicatorType, sftp, sftpProperties.getRemoteDir(), e);
         }
     }
 
-    private void processPathList(List<String> batch) {
+    private void processPathList(ChannelSftp sftp, List<String> batch) {
         for (String path : batch) {
             log.info("SftpDataSyncService processPathList, path:{}", path);
-            List<PowerForecastData> list = sftpFileParser.parseFile(path);
+            List<PowerForecastData> list = sftpFileParser.parseFile(sftp, path);
             powerForecastDataService.saveList(list);
         }
     }

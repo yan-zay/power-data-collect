@@ -1,12 +1,11 @@
 package com.dtxytech.powerdatacollect.core.service.sftp;
 
 import com.dtxytech.powerdatacollect.core.entity.PowerForecastData;
-import com.dtxytech.powerdatacollect.core.enums.IndicatorTypeEnum;
 import com.dtxytech.powerdatacollect.core.service.station.StationService;
+import com.jcraft.jsch.ChannelSftp;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -21,7 +20,7 @@ public abstract class SftpFileParser {
     @Autowired
     protected StationService stationService;
 
-    public abstract List<PowerForecastData> parseFile(String path);
+    public abstract List<PowerForecastData> parseFile(ChannelSftp sftp, String path);
 
     protected String getFileName(String path) {
         return path.substring(path.lastIndexOf('/') + 1);
