@@ -14,6 +14,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -43,7 +44,7 @@ public class SftpFileParserGuangxi extends SftpFileParser {
             return new ArrayList<>();
         }
 
-        try (InputStream in = java.nio.file.Files.newInputStream(java.nio.file.Paths.get(path))) {
+        try (InputStream in = Files.newInputStream(java.nio.file.Paths.get(path))) {
             return parseForecastFileFromSftp(indicatorType, in, path, fileName);
         } catch (Exception e) {
             log.error("解析文件失败: {}", path, e);

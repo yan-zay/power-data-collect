@@ -38,7 +38,7 @@ public class PowerForecastDataServiceImpl extends ServiceImpl<PowerForecastDataM
     @Override
     @Transactional
     public void saveList(List<PowerForecastData> list) {
-        if (list.isEmpty()) {
+        if (list == null || list.isEmpty()) {
             return;
         }
         boolean exist = this.checkDuplicate(list.get(0));

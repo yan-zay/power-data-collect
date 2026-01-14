@@ -44,14 +44,14 @@ public class SftpDownloaderNeimeng extends SftpDownloader {
     /**
      * 递归收集远程目录下的所有文件路径
      */
-    protected void recurseCollectFilePaths(ChannelSftp sftp, String path, IndicatorTypeEnum indicatorType, List<String> filePaths) throws SftpException, IOException {
+    protected void recurseCollectFilePaths(ChannelSftp sftp, String path, IndicatorTypeEnum indicatorType,
+                                           List<String> filePaths) throws SftpException, IOException {
         Vector<ChannelSftp.LsEntry> entries = sftp.ls(path);
         if (entries == null) return;
         entries.sort((o1, o2) -> o2.getFilename().compareTo(o1.getFilename()));
 
         for (ChannelSftp.LsEntry entry : entries) {
             String dirName = entry.getFilename();
-            // 跳过 "." 和 ".."
             if (".".equals(dirName) || "..".equals(dirName)) {
                 continue;
             }

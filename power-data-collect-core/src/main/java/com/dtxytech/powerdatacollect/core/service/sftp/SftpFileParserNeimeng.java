@@ -13,6 +13,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,10 +42,10 @@ public class SftpFileParserNeimeng extends SftpFileParser {
             return new ArrayList<>();
         }
 
-        try (InputStream in = java.nio.file.Files.newInputStream(java.nio.file.Paths.get(path))) {
+        try (InputStream in = Files.newInputStream(java.nio.file.Paths.get(path))) {
             return parseForecastFileFromSftp(indicatorType, in, path, fileName);
         } catch (Exception e) {
-            log.error("解析文件失败: {}", path, e);
+            log.error("SftpFileParserNeimeng 解析文件失败: {}", path, e);
             return new ArrayList<>();
         }
     }
@@ -119,7 +120,7 @@ public class SftpFileParserNeimeng extends SftpFileParser {
 
             return getListDate(indicatorType, filePath, filename, stationCode, forecastTimeStr, dataLines);
         } catch (Exception e) {
-            log.error("❌ 读取或解析文件失败: {}", e.getMessage(), e);
+            log.error("SftpFileParserNeimeng parseForecastFileFromSftp, filePath:{}, 读取或解析文件失败: {}", filePath, e.getMessage(), e);
             return null;
         }
     }
@@ -137,7 +138,7 @@ public class SftpFileParserNeimeng extends SftpFileParser {
             try {
                 value = new BigDecimal(data);
             }catch (Exception e) {
-                log.error("SftpFileParser getListDate value:{}", value, e);
+                log.error("SftpFileParserNeimeng getListDate value:{}", value, e);
                 continue;
             }
             PowerForecastData obj = PowerForecastData.builder()
@@ -178,7 +179,7 @@ public class SftpFileParserNeimeng extends SftpFileParser {
         if (parts.length >= part + 1) { // 路径以/开头会产生一个空的第一项
             return parts[part]; // 第五项实际上是第四级目录
         }
-        log.error("Invalid file filePath:{}, part:{}", filePath, part);
+        log.error("SftpFileParserNeimeng Invalid file filePath:{}, part:{}", filePath, part);
         return "";
     }
 }
