@@ -21,6 +21,12 @@ public abstract class SftpFileParser {
     @Autowired
     protected StationService stationService;
 
+    public abstract List<PowerForecastData> parseFile(String path);
+
+    protected String getFileName(String path) {
+        return path.substring(path.lastIndexOf('/') + 1);
+    }
+
     /**
      * 从远程 SFTP 读取并解析预测数据文件（适配两列格式）
      */
