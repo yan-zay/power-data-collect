@@ -64,16 +64,13 @@ public class PowerForecastDataServiceImpl extends ServiceImpl<PowerForecastDataM
     @Override
     @Transactional
     public void saveListByType(List<PowerForecastData> list) {
-        switch (list.get(0).getFilePath()) {
-            case "cdt":
-                cdt.saveBatch(copyList(list, PowerForecastDataCdt.class));
-                break;
-            case "ggep":
-                ggep.saveBatch(copyList(list, PowerForecastDataGgep.class));
-                break;
-            case "station":
-                station.saveBatch(copyList(list, PowerForecastDataStation.class));
-                break;
+        String filePath = list.get(0).getFilePath();
+        if (filePath.startsWith("//cdt")) {
+            cdt.saveBatch(copyList(list, PowerForecastDataCdt.class));
+        }else if (filePath.startsWith("//ggep")) {
+            ggep.saveBatch(copyList(list, PowerForecastDataGgep.class));
+        }else if (filePath.startsWith("//station")) {
+            station.saveBatch(copyList(list, PowerForecastDataStation.class));
         }
     }
 
