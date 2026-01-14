@@ -36,7 +36,6 @@ public class SftpDataSyncService {
         try {
             List<String> pathList = sftpRecursiveDownloader.getAllFilePath(indicatorType, sftp, sftpProperties.getRemoteDir());
             log.info("SftpDataSyncService syncFileList pathList.size:{}", pathList.size());
-            log.info("SftpDataSyncService syncFileList pathList.size:{}, pathList.get(0):{}, pathList.get(1):{}", pathList.size(), pathList.get(0), pathList.get(1));
             List<List<String>> batchList = Lists.partition(pathList, BATCH_SIZE);
             for (List<String> batch : batchList) {
                 processPathList(sftp, batch);

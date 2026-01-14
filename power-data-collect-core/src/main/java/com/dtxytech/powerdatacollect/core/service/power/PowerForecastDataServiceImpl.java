@@ -1,8 +1,8 @@
 package com.dtxytech.powerdatacollect.core.service.power;
 
-import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.dtxytech.powerdatacollect.core.config.SftpProperties;
 import com.dtxytech.powerdatacollect.core.entity.PowerForecastData;
 import com.dtxytech.powerdatacollect.core.entity.guangxi.PowerForecastDataCdt;
 import com.dtxytech.powerdatacollect.core.entity.guangxi.PowerForecastDataGgep;
@@ -34,11 +34,16 @@ public class PowerForecastDataServiceImpl extends ServiceImpl<PowerForecastDataM
     private PowerForecastDataServiceCdt cdt;
     private PowerForecastDataServiceGgep ggep;
     private PowerForecastDataServiceStation station;
+    private SftpProperties sftpProperties;
 
     @Override
     @Transactional
     public void saveList(List<PowerForecastData> list) {
         if (list == null || list.isEmpty()) {
+            return;
+        }
+        if (checkRegionGuangxi()) {
+            saveListByType(list);
             return;
         }
         boolean exist = this.checkDuplicate(list.get(0));
@@ -50,6 +55,10 @@ public class PowerForecastDataServiceImpl extends ServiceImpl<PowerForecastDataM
         if (!saved) {
             log.error("powerForecastDataService.saveBatch error, list:{}", list);
         }
+    }
+
+    private boolean checkRegionGuangxi() {
+        return "guangxi".equals(sftpProperties.getRegion());
     }
 
     @Override

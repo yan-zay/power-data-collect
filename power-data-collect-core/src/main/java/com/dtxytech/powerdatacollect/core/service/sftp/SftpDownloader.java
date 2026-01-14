@@ -28,6 +28,8 @@ import java.util.Vector;
 @Slf4j
 public abstract class SftpDownloader {
 
+    protected static final String SEPARATOR = "/";
+
     @Autowired
     protected SftpFileParser sftpFileParser;
     @Autowired

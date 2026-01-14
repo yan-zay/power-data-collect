@@ -44,20 +44,33 @@ public class SftpDownloaderGuangxi extends SftpDownloader {
                         continue;
                     }
                     log.info("SftpDataSyncService tag 0002");
-                    
-                    // 检查是否是日期格式的目录（yyyy-MM-dd）
-                    if (entry.getAttrs().isDir() && isDateFormat(fileName)) {
-                        String dateDir = remoteDir + "/" + fileName;
-                        log.info("SftpDataSyncService tag 0003");
-                        // 在日期目录中查找CDQYC和DQYC文件
-                        collectFilePathsFromDateDirectory(sftp, dateDir, indicatorType, filePaths);
-                    }
+
+                    String dir = remoteDir + SEPARATOR + fileName;
+                    getTwoLvDir(indicatorType, sftp, dir, filePaths);
                 }
             }
         } catch (SftpException e) {
             throw new RuntimeException("处理远程目录失败: " + remoteDir, e);
         }
         return filePaths;
+    }
+
+    private void getTwoLvDir(IndicatorTypeEnum indicatorType, ChannelSftp sftp, String dir, List<String> filePaths) throws SftpException {
+        Vector<ChannelSftp.LsEntry> entries = sftp.ls(dir);
+        for (ChannelSftp.LsEntry entry : entries) {
+            String fileName = entry.getFilename();
+            if (isSkippedFolder(fileName)) {
+                continue;
+            }
+            log.info("SftpDataSyncService tag 0003");
+            // 检查是否是日期格式的目录（yyyyMMdd）
+            if (entry.getAttrs().isDir() && isDateFormat(fileName)) {
+                log.info("SftpDataSyncService tag 0004");
+                String dateDir = dir + "/" + fileName;
+                // 在日期目录中查找CDQYC和DQYC文件
+                collectFilePathsFromDateDirectory(sftp, dateDir, indicatorType, filePaths);
+            }
+        }
     }
 
     /**
@@ -102,11 +115,11 @@ public class SftpDownloaderGuangxi extends SftpDownloader {
     }
     
     /**
-     * 判断文件夹名是否是日期格式（yyyy-MM-dd）
+     * 判断文件夹名是否是日期格式（yyyyMMdd）
      */
     private boolean isDateFormat(String fileName) {
-        // 检查是否符合yyyy-MM-dd格式
-        return fileName.matches("\\d{4}-\\d{2}-\\d{2}");
+        // 检查是否符合yyyyMMdd格式
+        return fileName.matches("\\d{4}\\d{2}\\d{2}");
     }
     
     /**
