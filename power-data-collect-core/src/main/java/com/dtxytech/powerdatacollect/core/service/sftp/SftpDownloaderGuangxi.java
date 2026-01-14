@@ -31,19 +31,16 @@ public class SftpDownloaderGuangxi extends SftpDownloader {
         try {
             // 列出远程目录下的所有条目
             Vector<ChannelSftp.LsEntry> entries = sftp.ls(remoteDir);
-            log.info("SftpDataSyncService syncFileList remoteDir:{}, entries:{}", remoteDir, entries.toString());
+            log.info("SftpDataSyncService syncFileList remoteDir:{}, entries:{}", remoteDir, entries);
             
             if (entries != null) {
                 for (ChannelSftp.LsEntry entry : entries) {
                     String fileName = entry.getFilename();
-                    log.info("SftpDataSyncService tag 0001, fileName:{}", fileName);
-                    
+
                     // 跳过当前目录和父目录
                     if (isSkippedFolder(fileName)) {
-                        log.info("SftpDataSyncService tag 0002.0");
                         continue;
                     }
-                    log.info("SftpDataSyncService tag 0002");
 
                     String dir = remoteDir + SEPARATOR + fileName;
                     getTwoLvDir(indicatorType, sftp, dir, filePaths);
@@ -62,10 +59,8 @@ public class SftpDownloaderGuangxi extends SftpDownloader {
             if (isSkippedFolder(fileName)) {
                 continue;
             }
-            log.info("SftpDataSyncService tag 0003");
             // 检查是否是日期格式的目录（yyyyMMdd）
             if (entry.getAttrs().isDir() && isDateFormat(fileName)) {
-                log.info("SftpDataSyncService tag 0004");
                 String dateDir = dir + "/" + fileName;
                 // 在日期目录中查找CDQYC和DQYC文件
                 collectFilePathsFromDateDirectory(sftp, dateDir, indicatorType, filePaths);
