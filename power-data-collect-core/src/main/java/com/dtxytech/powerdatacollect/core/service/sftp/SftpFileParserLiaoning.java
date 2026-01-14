@@ -18,6 +18,8 @@ import org.springframework.stereotype.Component;
 import java.io.*;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -44,7 +46,7 @@ public class SftpFileParserLiaoning extends SftpFileParser {
         // 从路径中提取文件名和目录信息
         String fileName = getFileName(path);
 
-        try (InputStream in = java.nio.file.Files.newInputStream(java.nio.file.Paths.get(path))) {
+        try (InputStream in = Files.newInputStream(Paths.get(path))) {
             return parseForecastFileFromSftp(in, path, fileName);
         } catch (Exception e) {
             log.error("解析文件失败: {}", path, e);

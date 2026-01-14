@@ -1,55 +1,48 @@
 package com.dtxytech.powerdatacollect.core.test;
 
 import com.dtxytech.powerdatacollect.core.entity.PowerForecastData;
-import com.dtxytech.powerdatacollect.core.enums.IndicatorTypeEnum;
+import com.dtxytech.powerdatacollect.core.service.sftp.SftpFileParser;
 import com.dtxytech.powerdatacollect.core.service.sftp.SftpFileParserLongjiang;
 import com.dtxytech.powerdatacollect.core.service.station.StationService;
 
-import java.io.FileInputStream;
-import java.io.InputStream;
 import java.util.List;
 
 /**
- * 测试黑龙江地区文件解析功能
+ * 测试黑龙江地区文件解析功能 - 使用顶级父类SftpFileParser的parseFile方法
  */
 public class TestSftpFileParserLongjiang {
 
     public static void main(String[] args) {
         // 创建测试实例 - 需要提供StationService的实例
-        // 由于StationService是Spring组件，我们使用mock或直接实例化
-        // 但为了测试，我们可以创建一个简单的测试版本
-
         // 创建一个mock的StationService
         StationService mockStationService = new MockStationService();
 
-        // 创建测试解析器
-        SftpFileParserLongjiang parser = new SftpFileParserLongjiang(mockStationService);
+        // 创建测试解析器 - 使用SftpFileParser接口引用
+        SftpFileParser parser = new SftpFileParserLongjiang(mockStationService);
+
+        // 复制测试文件到可访问的位置以便parseFile方法能正确读取
+        String dqFilePath = "D:\\WorkSpace\\DTXY\\power-data-collect\\power-data-collect-starter-boot\\src\\main\\resources\\sftp\\longjiang\\FAFD70_20260108_0000_DQ.WPD";
+        String cdqFilePath1 = "D:\\WorkSpace\\DTXY\\power-data-collect\\power-data-collect-starter-boot\\src\\main\\resources\\sftp\\longjiang\\FAFD70_20260108_0030_CDQ.WPD";
+        String cdqFilePath2 = "D:\\WorkSpace\\DTXY\\power-data-collect\\power-data-collect-starter-boot\\src\\main\\resources\\sftp\\longjiang\\FAFD70_20260108_0015_CDQ.WPD";
 
         // 测试解析DQ文件
-        testParseDQFile(parser);
+        testParseDQFile(parser, dqFilePath);
 
         // 测试解析CDQ文件
-        testParseCDQFile(parser);
+        testParseCDQFile(parser, cdqFilePath1);
 
         // 测试解析另一个CDQ文件
-        testParseCDQFile2(parser);
+        testParseCDQFile2(parser, cdqFilePath2);
     }
 
     /**
      * 测试解析DQ文件
      */
-    private static void testParseDQFile(SftpFileParserLongjiang parser) {
+    private static void testParseDQFile(SftpFileParser parser, String filePath) {
         System.out.println("=== 测试解析DQ文件 ===");
         try {
-            // 从资源目录读取测试文件
-            InputStream inputStream = new FileInputStream("D:\\WorkSpace\\DTXY\\power-data-collect\\power-data-collect-starter-boot\\src\\main\\resources\\sftp\\longjiang\\FAFD70_20260108_0000_DQ.WPD");
-
-            List<PowerForecastData> result = parser.parseForecastFileFromSftp(
-                IndicatorTypeEnum.DQ,
-                inputStream,
-                "/sftp/longjiang",
-                "FAFD70_20260108_0000_DQ.WPD"
-            );
+            // 使用顶级父类的parseFile方法
+            List<PowerForecastData> result = parser.parseFile(filePath);
 
             if (result != null) {
                 System.out.println("解析DQ文件成功，共解析 " + result.size() + " 条数据");
@@ -74,8 +67,6 @@ public class TestSftpFileParserLongjiang {
             } else {
                 System.out.println("解析DQ文件失败");
             }
-
-            inputStream.close();
         } catch (Exception e) {
             System.err.println("测试DQ文件解析时出错: " + e.getMessage());
             e.printStackTrace();
@@ -85,18 +76,11 @@ public class TestSftpFileParserLongjiang {
     /**
      * 测试解析CDQ文件
      */
-    private static void testParseCDQFile(SftpFileParserLongjiang parser) {
+    private static void testParseCDQFile(SftpFileParser parser, String filePath) {
         System.out.println("\n=== 测试解析CDQ文件 (0030_CDQ) ===");
         try {
-            // 从资源目录读取测试文件
-            InputStream inputStream = new FileInputStream("D:\\WorkSpace\\DTXY\\power-data-collect\\power-data-collect-starter-boot\\src\\main\\resources\\sftp\\longjiang\\FAFD70_20260108_0030_CDQ.WPD");
-
-            List<PowerForecastData> result = parser.parseForecastFileFromSftp(
-                IndicatorTypeEnum.CDQ,
-                inputStream,
-                "/sftp/longjiang",
-                "FAFD70_20260108_0030_CDQ.WPD"
-            );
+            // 使用顶级父类的parseFile方法
+            List<PowerForecastData> result = parser.parseFile(filePath);
 
             if (result != null) {
                 System.out.println("解析CDQ文件成功，共解析 " + result.size() + " 条数据");
@@ -116,8 +100,6 @@ public class TestSftpFileParserLongjiang {
             } else {
                 System.out.println("解析CDQ文件失败");
             }
-
-            inputStream.close();
         } catch (Exception e) {
             System.err.println("测试CDQ文件解析时出错: " + e.getMessage());
             e.printStackTrace();
@@ -127,18 +109,11 @@ public class TestSftpFileParserLongjiang {
     /**
      * 测试解析另一个CDQ文件
      */
-    private static void testParseCDQFile2(SftpFileParserLongjiang parser) {
+    private static void testParseCDQFile2(SftpFileParser parser, String filePath) {
         System.out.println("\n=== 测试解析CDQ文件 (0015_CDQ) ===");
         try {
-            // 从资源目录读取测试文件
-            InputStream inputStream = new FileInputStream("D:\\WorkSpace\\DTXY\\power-data-collect\\power-data-collect-starter-boot\\src\\main\\resources\\sftp\\longjiang\\FAFD70_20260108_0015_CDQ.WPD");
-
-            List<PowerForecastData> result = parser.parseForecastFileFromSftp(
-                IndicatorTypeEnum.CDQ,
-                inputStream,
-                "/sftp/longjiang",
-                "FAFD70_20260108_0015_CDQ.WPD"
-            );
+            // 使用顶级父类的parseFile方法
+            List<PowerForecastData> result = parser.parseFile(filePath);
 
             if (result != null) {
                 System.out.println("解析CDQ文件成功，共解析 " + result.size() + " 条数据");
@@ -158,8 +133,6 @@ public class TestSftpFileParserLongjiang {
             } else {
                 System.out.println("解析CDQ文件失败");
             }
-
-            inputStream.close();
         } catch (Exception e) {
             System.err.println("测试CDQ文件解析时出错: " + e.getMessage());
             e.printStackTrace();
