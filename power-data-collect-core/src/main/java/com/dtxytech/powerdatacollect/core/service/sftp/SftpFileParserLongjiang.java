@@ -143,8 +143,12 @@ public class SftpFileParserLongjiang extends SftpFileParser {
         
         while ((line = reader.readLine()) != null) {
             line = line.trim();
-            
-            if (line.equals("</ShortTermForcast::" + stationCode + ">")) {
+
+            // 如果遇到其他块的结束标签，则退出当前数据块解析
+            if (line.startsWith("</ShortTermForcast_AP::")) {
+                // 跳过AP块的标签，继续读取
+                continue;
+            } else if (line.startsWith("</ShortTermForcast::")) {
                 break; // 结束当前数据块
             }
             
