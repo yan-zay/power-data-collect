@@ -30,9 +30,12 @@ public class SftpDataSyncService {
     private final PowerForecastDataService powerForecastDataService;
 
     public void syncFileList(IndicatorTypeEnum indicatorType) {
+        log.info("SftpDataSyncService syncFileList start");
         ChannelSftp sftp = sftpConnectionManager.getCurrentSftp();
+        log.info("SftpDataSyncService syncFileList sftp:{}", sftp);
         try {
             List<String> pathList = sftpRecursiveDownloader.getAllFilePath(indicatorType, sftp, sftpProperties.getRemoteDir());
+            log.info("SftpDataSyncService syncFileList pathList.size:{}", pathList.size());
             List<List<String>> batchList = Lists.partition(pathList, BATCH_SIZE);
             for (List<String> batch : batchList) {
                 processPathList(sftp, batch);

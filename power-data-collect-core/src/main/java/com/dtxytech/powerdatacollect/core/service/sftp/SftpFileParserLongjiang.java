@@ -44,7 +44,7 @@ public class SftpFileParserLongjiang extends SftpFileParser {
             return new ArrayList<>();
         }
 
-        try (InputStream in = sftp.get(path)) {
+        try (InputStream in = Files.newInputStream(Paths.get(path))) {
             return parseForecastFileFromSftp(indicatorType, in, path, fileName);
         } catch (Exception e) {
             log.error("解析文件失败: {}", path, e);

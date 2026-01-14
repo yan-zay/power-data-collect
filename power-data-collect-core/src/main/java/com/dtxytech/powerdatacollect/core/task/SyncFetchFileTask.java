@@ -47,8 +47,10 @@ public class SyncFetchFileTask {
 
     @PostConstruct
     public void init() {
+        log.info("SyncFetchFileTask init");
         CompletableFuture.runAsync(() -> sftpDataSyncService.syncFileList(IndicatorTypeEnum.DQ));
-        CompletableFuture.runAsync(() -> sftpDataSyncService.syncFileList(IndicatorTypeEnum.CDQ));
+        sftpDataSyncService.syncFileList(IndicatorTypeEnum.CDQ);
         INITIALIZED = true;
+        log.info("SyncFetchFileTask init completed");
     }
 }

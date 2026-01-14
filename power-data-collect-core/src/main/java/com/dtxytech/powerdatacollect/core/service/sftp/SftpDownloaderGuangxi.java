@@ -4,6 +4,7 @@ import com.dtxytech.powerdatacollect.core.enums.IndicatorTypeEnum;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.SftpException;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
@@ -15,6 +16,7 @@ import java.util.Vector;
  * @Author zay
  * @Date 2026/1/12 10:28
  */
+@Slf4j
 @Component
 @AllArgsConstructor
 @ConditionalOnProperty(name = "sftp.region", havingValue = "guangxi", matchIfMissing = false)
@@ -28,25 +30,20 @@ public class SftpDownloaderGuangxi extends SftpDownloader {
         List<String> filePaths = new ArrayList<>();
         try {
             // 列出远程目录下的所有条目
-            Vector<?> entries = sftp.ls(remoteDir);
+            Vector<ChannelSftp.LsEntry> entries = sftp.ls(remoteDir);
+            log.info("SftpDataSyncService syncFileList remoteDir:{}, entries:{}", remoteDir, entries);
             
             if (entries != null) {
-                for (Object entryObj : entries) {
-                    com.jcraft.jsch.ChannelSftp.LsEntry entry = (com.jcraft.jsch.ChannelSftp.LsEntry) entryObj;
+                for (ChannelSftp.LsEntry entry : entries) {
                     String fileName = entry.getFilename();
-                    
+
                     // 跳过当前目录和父目录
                     if (isSkippedFolder(fileName)) {
                         continue;
                     }
-                    
-                    // 检查是否是日期格式的目录（yyyy-MM-dd）
-                    if (entry.getAttrs().isDir() && isDateFormat(fileName)) {
-                        String dateDir = remoteDir + "/" + fileName;
-                        
-                        // 在日期目录中查找CDQYC和DQYC文件
-                        collectFilePathsFromDateDirectory(sftp, dateDir, indicatorType, filePaths);
-                    }
+
+                    String dir = remoteDir + SEPARATOR + fileName;
+                    getTwoLvDir(indicatorType, sftp, dir, filePaths);
                 }
             }
         } catch (SftpException e) {
@@ -55,16 +52,32 @@ public class SftpDownloaderGuangxi extends SftpDownloader {
         return filePaths;
     }
 
+    private void getTwoLvDir(IndicatorTypeEnum indicatorType, ChannelSftp sftp, String dir, List<String> filePaths) throws SftpException {
+        Vector<ChannelSftp.LsEntry> entries = sftp.ls(dir);
+        for (ChannelSftp.LsEntry entry : entries) {
+            String fileName = entry.getFilename();
+            if (isSkippedFolder(fileName)) {
+                continue;
+            }
+            // 检查是否是日期格式的目录（yyyyMMdd）
+            if (entry.getAttrs().isDir() && isDateFormat(fileName)) {
+                String dateDir = dir + "/" + fileName;
+                // 在日期目录中查找CDQYC和DQYC文件
+                collectFilePathsFromDateDirectory(sftp, dateDir, indicatorType, filePaths);
+            }
+        }
+    }
+
     /**
      * 从日期目录收集文件路径
      */
     private void collectFilePathsFromDateDirectory(ChannelSftp sftp, String dateDir, IndicatorTypeEnum indicatorType, List<String> filePaths) {
+        log.info("SftpDownloaderGuangxi collectFilePathsFromDateDirectory dateDir:{}", dateDir);
         try {
-            Vector<?> entries = sftp.ls(dateDir);
+            Vector<ChannelSftp.LsEntry> entries = sftp.ls(dateDir);
             
             if (entries != null) {
-                for (Object entryObj : entries) {
-                    com.jcraft.jsch.ChannelSftp.LsEntry entry = (com.jcraft.jsch.ChannelSftp.LsEntry) entryObj;
+                for (ChannelSftp.LsEntry entry : entries) {
                     String fileName = entry.getFilename();
                     
                     // 跳过当前目录和父目录
@@ -97,11 +110,11 @@ public class SftpDownloaderGuangxi extends SftpDownloader {
     }
     
     /**
-     * 判断文件夹名是否是日期格式（yyyy-MM-dd）
+     * 判断文件夹名是否是日期格式（yyyyMMdd）
      */
     private boolean isDateFormat(String fileName) {
-        // 检查是否符合yyyy-MM-dd格式
-        return fileName.matches("\\d{4}-\\d{2}-\\d{2}");
+        // 检查是否符合yyyyMMdd格式
+        return fileName.matches("\\d{4}\\d{2}\\d{2}");
     }
     
     /**

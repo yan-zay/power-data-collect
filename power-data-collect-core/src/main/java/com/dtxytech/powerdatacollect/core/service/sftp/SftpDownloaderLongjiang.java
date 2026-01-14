@@ -30,10 +30,9 @@ public class SftpDownloaderLongjiang extends SftpDownloader {
         List<String> filePaths = new ArrayList<>();
         try {
             // 首先列出根目录下的所有子目录（场站文件夹）
-            Vector<?> entries = sftp.ls(remoteDir);
-            for (Object entry : entries) {
-                com.jcraft.jsch.ChannelSftp.LsEntry lsEntry = (com.jcraft.jsch.ChannelSftp.LsEntry) entry;
-                String fileName = lsEntry.getFilename();
+            Vector<ChannelSftp.LsEntry> entries = sftp.ls(remoteDir);
+            for (ChannelSftp.LsEntry entry : entries) {
+                String fileName = entry.getFilename();
 
                 // 跳过当前目录和父目录
                 if (".".equals(fileName) || "..".equals(fileName)) {
@@ -41,7 +40,7 @@ public class SftpDownloaderLongjiang extends SftpDownloader {
                 }
 
                 // 检查是否是目录且不是需要跳过的目录
-                if (lsEntry.getAttrs().isDir() && !isSkippedStation(fileName)) {
+                if (entry.getAttrs().isDir() && !isSkippedStation(fileName)) {
                     String stationCode = fileName; // 目录名作为场站编码
                     String stationDir = remoteDir + "/" + stationCode;
 
@@ -60,10 +59,9 @@ public class SftpDownloaderLongjiang extends SftpDownloader {
      */
     private void collectFilePathsFromStation(ChannelSftp sftp, String stationDir, String stationCode, IndicatorTypeEnum indicatorType, List<String> filePaths) {
         try {
-            Vector<?> entries = sftp.ls(stationDir);
-            for (Object entry : entries) {
-                com.jcraft.jsch.ChannelSftp.LsEntry lsEntry = (com.jcraft.jsch.ChannelSftp.LsEntry) entry;
-                String fileName = lsEntry.getFilename();
+            Vector<ChannelSftp.LsEntry> entries = sftp.ls(stationDir);
+            for (ChannelSftp.LsEntry entry : entries) {
+                String fileName = entry.getFilename();
 
                 // 跳过当前目录和父目录
                 if (".".equals(fileName) || "..".equals(fileName)) {
@@ -71,7 +69,7 @@ public class SftpDownloaderLongjiang extends SftpDownloader {
                 }
 
                 // 查找名为"bak"的目录
-                if ("bak".equals(fileName) && lsEntry.getAttrs().isDir()) {
+                if ("bak".equals(fileName) && entry.getAttrs().isDir()) {
                     String bakDir = stationDir + "/bak";
                     collectFilePathsFromBak(sftp, bakDir, stationCode, indicatorType, filePaths);
                 }
@@ -86,10 +84,9 @@ public class SftpDownloaderLongjiang extends SftpDownloader {
      */
     private void collectFilePathsFromBak(ChannelSftp sftp, String bakDir, String stationCode, IndicatorTypeEnum indicatorType, List<String> filePaths) {
         try {
-            Vector<?> entries = sftp.ls(bakDir);
-            for (Object entry : entries) {
-                com.jcraft.jsch.ChannelSftp.LsEntry lsEntry = (com.jcraft.jsch.ChannelSftp.LsEntry) entry;
-                String fileName = lsEntry.getFilename();
+            Vector<ChannelSftp.LsEntry> entries = sftp.ls(bakDir);
+            for (ChannelSftp.LsEntry entry : entries) {
+                String fileName = entry.getFilename();
 
                 // 跳过当前目录和父目录
                 if (".".equals(fileName) || "..".equals(fileName)) {
@@ -97,7 +94,7 @@ public class SftpDownloaderLongjiang extends SftpDownloader {
                 }
 
                 // 假设目录名是日期格式（如 2025-10-23），检查是否是目录
-                if (lsEntry.getAttrs().isDir()) {
+                if (entry.getAttrs().isDir()) {
                     String dateDir = bakDir + "/" + fileName;
                     collectFilePathsFromDateDir(sftp, dateDir, stationCode, indicatorType, filePaths);
                 }
@@ -112,10 +109,9 @@ public class SftpDownloaderLongjiang extends SftpDownloader {
      */
     private void collectFilePathsFromDateDir(ChannelSftp sftp, String dateDir, String stationCode, IndicatorTypeEnum indicatorType, List<String> filePaths) {
         try {
-            Vector<?> entries = sftp.ls(dateDir);
-            for (Object entry : entries) {
-                com.jcraft.jsch.ChannelSftp.LsEntry lsEntry = (com.jcraft.jsch.ChannelSftp.LsEntry) entry;
-                String fileName = lsEntry.getFilename();
+            Vector<ChannelSftp.LsEntry> entries = sftp.ls(dateDir);
+            for (ChannelSftp.LsEntry entry : entries) {
+                String fileName = entry.getFilename();
 
                 // 跳过当前目录和父目录
                 if (".".equals(fileName) || "..".equals(fileName)) {

@@ -1,8 +1,8 @@
 package com.dtxytech.powerdatacollect.core.service.power;
 
-import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.dtxytech.powerdatacollect.core.config.SftpProperties;
 import com.dtxytech.powerdatacollect.core.entity.PowerForecastData;
 import com.dtxytech.powerdatacollect.core.entity.guangxi.PowerForecastDataCdt;
 import com.dtxytech.powerdatacollect.core.entity.guangxi.PowerForecastDataGgep;
@@ -34,11 +34,16 @@ public class PowerForecastDataServiceImpl extends ServiceImpl<PowerForecastDataM
     private PowerForecastDataServiceCdt cdt;
     private PowerForecastDataServiceGgep ggep;
     private PowerForecastDataServiceStation station;
+    private SftpProperties sftpProperties;
 
     @Override
     @Transactional
     public void saveList(List<PowerForecastData> list) {
         if (list == null || list.isEmpty()) {
+            return;
+        }
+        if (checkRegionGuangxi()) {
+            saveListByType(list);
             return;
         }
         boolean exist = this.checkDuplicate(list.get(0));
@@ -52,19 +57,20 @@ public class PowerForecastDataServiceImpl extends ServiceImpl<PowerForecastDataM
         }
     }
 
+    private boolean checkRegionGuangxi() {
+        return "guangxi".equals(sftpProperties.getRegion());
+    }
+
     @Override
     @Transactional
     public void saveListByType(List<PowerForecastData> list) {
-        switch (list.get(0).getFilePath()) {
-            case "cdt":
-                cdt.saveBatch(copyList(list, PowerForecastDataCdt.class));
-                break;
-            case "ggep":
-                ggep.saveBatch(copyList(list, PowerForecastDataGgep.class));
-                break;
-            case "station":
-                station.saveBatch(copyList(list, PowerForecastDataStation.class));
-                break;
+        String filePath = list.get(0).getFilePath();
+        if (filePath.startsWith("//cdt")) {
+            cdt.saveBatch(copyList(list, PowerForecastDataCdt.class));
+        }else if (filePath.startsWith("//ggep")) {
+            ggep.saveBatch(copyList(list, PowerForecastDataGgep.class));
+        }else if (filePath.startsWith("//station")) {
+            station.saveBatch(copyList(list, PowerForecastDataStation.class));
         }
     }
 
