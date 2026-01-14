@@ -4,6 +4,9 @@ import com.dtxytech.powerdatacollect.core.entity.PowerForecastData;
 import com.dtxytech.powerdatacollect.core.enums.EnergyTypeStationCodeEnum;
 import com.dtxytech.powerdatacollect.core.enums.IndicatorTypeEnum;
 import com.dtxytech.powerdatacollect.core.service.station.StationService;
+import com.dtxytech.powerdatacollect.core.task.SyncFetchFileTask;
+import com.jcraft.jsch.ChannelSftp;
+import com.jcraft.jsch.SftpException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dom4j.Document;
@@ -12,14 +15,14 @@ import org.dom4j.io.SAXReader;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -72,7 +75,12 @@ public class SftpFileParserLiaoning extends SftpFileParser {
         List<PowerForecastData> result = new ArrayList<>();
         String[] parts = filePath.split("[\\\\/]");
         String lastPart = parts[parts.length - 1];
-        forecastTimeStr=filename.split("_")[1];
+        String[] split = filename.split("_");
+        if(IndicatorTypeEnum.DQ.getName().toUpperCase().equals(lastPart)==true){
+            forecastTimeStr=split[1];
+        }else {
+            forecastTimeStr=split[1]+split[split.length-1].replace(".xml","");
+        }
         LocalDateTime collectTime = parseForecastTimeStr(forecastTimeStr);
         LocalDateTime forecastTime = parseForecastTimeStr(forecastTimeStr);
         String stationId = stationService.getStationIdByCode(stationCode);
