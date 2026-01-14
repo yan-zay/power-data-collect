@@ -1,6 +1,5 @@
 package com.dtxytech.powerdatacollect.core.service.sftp;
 
-import com.dtxytech.powerdatacollect.core.entity.PowerForecastData;
 import com.dtxytech.powerdatacollect.core.enums.IndicatorTypeEnum;
 import com.dtxytech.powerdatacollect.core.task.SyncFetchFileTask;
 import com.jcraft.jsch.ChannelSftp;
@@ -11,9 +10,9 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
@@ -30,23 +29,21 @@ public class SftpDownloaderLiaoning extends SftpDownloader {
 
     private static final String SEPARATOR = "/";
 
-    /**
-     * 递归下载并解析指定远程目录下的所有文件
-     */
     @Override
-    protected void downloadAndParseAllFile(ChannelSftp sftp, String remoteDir, IndicatorTypeEnum indicatorType) {
+    public List<String> getAllFilePath(IndicatorTypeEnum indicatorType, ChannelSftp sftp, String remoteDir) {
+        List<String> filePaths = new ArrayList<>();
         try {
-            recurseDownload(sftp, remoteDir, indicatorType);
+            recurseCollectFilePaths(sftp, remoteDir, indicatorType, filePaths);
         } catch (SftpException | IOException e) {
-            throw new RuntimeException("Failed to recursively download files from: " + remoteDir, e);
+            throw new RuntimeException("Failed to collect file paths from: " + remoteDir, e);
         }
+        return filePaths;
     }
 
-
     /**
-     * 递归遍历远程目录
+     * 递归收集远程目录下的所有文件路径
      */
-    protected void recurseDownload(ChannelSftp sftp, String path, IndicatorTypeEnum indicatorType) throws SftpException, IOException {
+    protected void recurseCollectFilePaths(ChannelSftp sftp, String path, IndicatorTypeEnum indicatorType, List<String> filePaths) throws SftpException, IOException {
         Vector<ChannelSftp.LsEntry> entries = sftp.ls(path);
         if (entries == null) return;
         entries.sort((o1, o2) -> o2.getFilename().compareTo(o1.getFilename()));
@@ -59,13 +56,18 @@ public class SftpDownloaderLiaoning extends SftpDownloader {
             }
 
             String fullPath = path + SEPARATOR + dirName;
-            log.info("读取文件路径{}",fullPath);
             if (entry.getAttrs().isDir()) {
                 // 递归进入子目录
-                recurseDownload(sftp, fullPath, indicatorType);
+                recurseCollectFilePaths(sftp, fullPath, indicatorType, filePaths);
             } else {
-                // 是文件，下载并解析
-                processFile(sftp, path, dirName, indicatorType);
+                // 是文件，检查是否符合指标类型并添加到路径列表
+                if (indicatorType.checkFileName(dirName)) {
+                    log.info("判断文件是否过期fileName: {}", dirName);
+                    if (checkDir(dirName)) {
+                        continue;
+                    }
+                    filePaths.add(fullPath);
+                }
             }
         }
     }
@@ -105,8 +107,12 @@ public class SftpDownloaderLiaoning extends SftpDownloader {
         }
         // 移除可能的分隔符，只保留数字
         String[] split = dateStr.split("_");
-        String numericStr="";
-        numericStr = split.length==3?split[1]:dateStr.replaceAll("[^0-9]", "");
+        String numericStr = "";
+        if (split.length == 2) {
+            numericStr = split.length == 2 ? split[1] : dateStr.replaceAll("[^0-9]", "");
+        } else {
+            numericStr = split.length == 3 ? split[1] : dateStr.replaceAll("[^0-9]", "");
+        }
         // 尝试转换为整数进行比较，假设格式为yyyyMMdd
         try {
             return Integer.parseInt(numericStr);
@@ -116,23 +122,4 @@ public class SftpDownloaderLiaoning extends SftpDownloader {
         }
     }
 
-    /**
-     * 下载单个文件并调用解析逻辑
-     */
-    private void processFile(ChannelSftp sftp, String path, String filename, IndicatorTypeEnum indicatorType) throws SftpException, IOException {
-        String fullPath = path + SEPARATOR + filename;
-        if (!indicatorType.checkFileName(filename)) {
-            return;
-        }
-        if (checkDir(filename)) {
-            return;
-        }
-        try (InputStream in = sftp.get(fullPath)) {
-            // 预留：文件内容已通过 InputStream 获取
-            // 此处可调用业务解析逻辑
-            List<PowerForecastData> list = sftpFileParser.parseForecastFileFromSftp(indicatorType, in, path, filename);
-            log.info("sftpFileParser.parseForecastFileFromSftp, Parsing filename: {}, list.size:{}", filename, list.size());
-            powerForecastDataService.saveList(list);
-        }
-    }
 }

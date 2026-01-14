@@ -39,15 +39,26 @@ public class SftpFileParserLiaoning extends SftpFileParser {
 
     private StationService stationService;
 
+    @Override
+    public List<PowerForecastData> parseFile(String path) {
+        // 从路径中提取文件名和目录信息
+        String fileName = getFileName(path);
+
+        try (InputStream in = java.nio.file.Files.newInputStream(java.nio.file.Paths.get(path))) {
+            return parseForecastFileFromSftp(in, path, fileName);
+        } catch (Exception e) {
+            log.error("解析文件失败: {}", path, e);
+            return new ArrayList<>();
+        }
+    }
+
     /**
      * 从远程 SFTP 读取并解析预测数据文件（适配两列格式）
      */
-    @Override
-    public List<PowerForecastData> parseForecastFileFromSftp(IndicatorTypeEnum indicatorType, InputStream in,
+    public List<PowerForecastData> parseForecastFileFromSftp(InputStream in,
                                                              String filePath, String filename) {
         // === 2. 流式读取并解析 ===
         try {
-            boolean inDataBlock = false;
             List<String> dataLines = new ArrayList<>();
             String forecastTimeStr = null;
             BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
@@ -63,14 +74,14 @@ public class SftpFileParserLiaoning extends SftpFileParser {
             String stationCode = getPathPart(filePath, 4);
             log.info("parseForecastFileFromSftp stationCode:{}", stationCode);
 
-            return getListDate(indicatorType, filePath, filename, stationCode, forecastTimeStr, dataLines);
+            return getListDate(filePath, filename, stationCode, forecastTimeStr, dataLines);
         } catch (Exception e) {
             log.error("❌ 读取或解析文件失败: {}", e.getMessage(), e);
             return null;
         }
     }
 
-    protected List<PowerForecastData> getListDate(IndicatorTypeEnum indicatorType, String filePath, String filename,
+    protected List<PowerForecastData> getListDate(String filePath, String filename,
                                                   String stationCode, String forecastTimeStr, List<String> dataLines) {
         List<PowerForecastData> result = new ArrayList<>();
         String[] parts = filePath.split("[\\\\/]");
