@@ -8,6 +8,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 
 /**
@@ -24,7 +26,8 @@ public class SftpDownloaderLongjiang extends SftpDownloader {
     private static final String[] SKIPPED_STATIONS = {"ycfile", "yuanjingglyc", "tmp", "..", "."};
 
     @Override
-    protected void downloadAndParseAllFile(ChannelSftp sftp, String remoteDir, IndicatorTypeEnum indicatorType) {
+    public List<String> getAllFilePath(IndicatorTypeEnum indicatorType, ChannelSftp sftp, String remoteDir) {
+        List<String> filePaths = new ArrayList<>();
         try {
             // 首先列出根目录下的所有子目录（场站文件夹）
             Vector<?> entries = sftp.ls(remoteDir);
@@ -43,18 +46,19 @@ public class SftpDownloaderLongjiang extends SftpDownloader {
                     String stationDir = remoteDir + "/" + stationCode;
 
                     // 进入场站目录查找bak目录
-                    processStationDirectory(sftp, stationDir, stationCode, indicatorType);
+                    collectFilePathsFromStation(sftp, stationDir, stationCode, indicatorType, filePaths);
                 }
             }
         } catch (SftpException e) {
             log.error("处理远程目录 {} 时发生错误", remoteDir, e);
         }
+        return filePaths;
     }
 
     /**
-     * 处理场站目录，查找并处理其中的bak目录
+     * 从场站目录收集文件路径
      */
-    private void processStationDirectory(ChannelSftp sftp, String stationDir, String stationCode, IndicatorTypeEnum indicatorType) {
+    private void collectFilePathsFromStation(ChannelSftp sftp, String stationDir, String stationCode, IndicatorTypeEnum indicatorType, List<String> filePaths) {
         try {
             Vector<?> entries = sftp.ls(stationDir);
             for (Object entry : entries) {
@@ -69,7 +73,7 @@ public class SftpDownloaderLongjiang extends SftpDownloader {
                 // 查找名为"bak"的目录
                 if ("bak".equals(fileName) && lsEntry.getAttrs().isDir()) {
                     String bakDir = stationDir + "/bak";
-                    processBakDirectory(sftp, bakDir, stationCode, indicatorType);
+                    collectFilePathsFromBak(sftp, bakDir, stationCode, indicatorType, filePaths);
                 }
             }
         } catch (SftpException e) {
@@ -78,9 +82,9 @@ public class SftpDownloaderLongjiang extends SftpDownloader {
     }
 
     /**
-     * 处理bak目录，遍历日期子目录
+     * 从bak目录收集文件路径
      */
-    private void processBakDirectory(ChannelSftp sftp, String bakDir, String stationCode, IndicatorTypeEnum indicatorType) {
+    private void collectFilePathsFromBak(ChannelSftp sftp, String bakDir, String stationCode, IndicatorTypeEnum indicatorType, List<String> filePaths) {
         try {
             Vector<?> entries = sftp.ls(bakDir);
             for (Object entry : entries) {
@@ -95,7 +99,7 @@ public class SftpDownloaderLongjiang extends SftpDownloader {
                 // 假设目录名是日期格式（如 2025-10-23），检查是否是目录
                 if (lsEntry.getAttrs().isDir()) {
                     String dateDir = bakDir + "/" + fileName;
-                    processDateDirectory(sftp, dateDir, stationCode, indicatorType);
+                    collectFilePathsFromDateDir(sftp, dateDir, stationCode, indicatorType, filePaths);
                 }
             }
         } catch (SftpException e) {
@@ -104,9 +108,9 @@ public class SftpDownloaderLongjiang extends SftpDownloader {
     }
 
     /**
-     * 处理日期目录，下载和解析其中的WPD文件
+     * 从日期目录收集文件路径
      */
-    private void processDateDirectory(ChannelSftp sftp, String dateDir, String stationCode, IndicatorTypeEnum indicatorType) {
+    private void collectFilePathsFromDateDir(ChannelSftp sftp, String dateDir, String stationCode, IndicatorTypeEnum indicatorType, List<String> filePaths) {
         try {
             Vector<?> entries = sftp.ls(dateDir);
             for (Object entry : entries) {
@@ -118,18 +122,22 @@ public class SftpDownloaderLongjiang extends SftpDownloader {
                     continue;
                 }
 
-                // 检查是否是WPD文件
-                if (fileName.toLowerCase().endsWith(".wpd")) {
+                // 检查是否是WPD文件且符合指标类型
+                if (fileName.toLowerCase().endsWith(".wpd") && isMatchingFileType(fileName, indicatorType)) {
                     String filePath = dateDir + "/" + fileName;
-                    log.info("正在处理文件: {}, 场站: {}, 类型: {}", filePath, stationCode, indicatorType);
-
-                    // 下载文件并解析
-                    sftpFileParser.parseForecastFileFromSftp(indicatorType, sftp.get(filePath), filePath, fileName);
+                    filePaths.add(filePath);
                 }
             }
         } catch (SftpException e) {
             log.error("处理日期目录 {} 时发生错误", dateDir, e);
         }
+    }
+
+    /**
+     * 根据指标类型检查文件名是否匹配
+     */
+    private boolean isMatchingFileType(String fileName, IndicatorTypeEnum indicatorType) {
+        return indicatorType.checkFileName(fileName);
     }
 
     /**

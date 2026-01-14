@@ -7,6 +7,8 @@ import lombok.AllArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 
 /**
@@ -22,7 +24,8 @@ public class SftpDownloaderGuangxi extends SftpDownloader {
     private static final String[] SKIPPED_FOLDERS = {"..", "."};
 
     @Override
-    protected void downloadAndParseAllFile(ChannelSftp sftp, String remoteDir, IndicatorTypeEnum indicatorType) {
+    public List<String> getAllFilePath(IndicatorTypeEnum indicatorType, ChannelSftp sftp, String remoteDir) {
+        List<String> filePaths = new ArrayList<>();
         try {
             // 列出远程目录下的所有条目
             Vector<?> entries = sftp.ls(remoteDir);
@@ -42,19 +45,20 @@ public class SftpDownloaderGuangxi extends SftpDownloader {
                         String dateDir = remoteDir + "/" + fileName;
                         
                         // 在日期目录中查找CDQYC和DQYC文件
-                        processDateDirectory(sftp, dateDir, indicatorType);
+                        collectFilePathsFromDateDirectory(sftp, dateDir, indicatorType, filePaths);
                     }
                 }
             }
         } catch (SftpException e) {
             throw new RuntimeException("处理远程目录失败: " + remoteDir, e);
         }
+        return filePaths;
     }
-    
+
     /**
-     * 处理日期目录，查找并处理其中的CDQYC和DQYC文件
+     * 从日期目录收集文件路径
      */
-    private void processDateDirectory(ChannelSftp sftp, String dateDir, IndicatorTypeEnum indicatorType) {
+    private void collectFilePathsFromDateDirectory(ChannelSftp sftp, String dateDir, IndicatorTypeEnum indicatorType, List<String> filePaths) {
         try {
             Vector<?> entries = sftp.ls(dateDir);
             
@@ -68,16 +72,10 @@ public class SftpDownloaderGuangxi extends SftpDownloader {
                         continue;
                     }
                     
-                    // 检查文件名是否包含CDQYC或DQYC标识
-                    if (!entry.getAttrs().isDir() && isPowerForecastFile(fileName)) {
+                    // 检查文件名是否包含CDQYC或DQYC标识，并且符合指标类型
+                    if (!entry.getAttrs().isDir() && isPowerForecastFile(fileName) && isMatchingFileType(fileName, indicatorType)) {
                         String filePath = dateDir + "/" + fileName;
-                        
-                        // 根据文件名判断指标类型并解析文件
-                        IndicatorTypeEnum fileType = determineIndicatorType(fileName);
-                        if (fileType != null && fileType == indicatorType) {
-                            // 下载并解析文件
-                            sftpFileParser.parseForecastFileFromSftp(indicatorType, sftp.get(filePath), dateDir, fileName);
-                        }
+                        filePaths.add(filePath);
                     }
                 }
             }
@@ -115,17 +113,15 @@ public class SftpDownloaderGuangxi extends SftpDownloader {
     }
     
     /**
-     * 根据文件名确定指标类型
+     * 判断文件是否符合指定的指标类型
      */
-    private IndicatorTypeEnum determineIndicatorType(String fileName) {
+    private boolean isMatchingFileType(String fileName, IndicatorTypeEnum indicatorType) {
         String upperFileName = fileName.toUpperCase();
-        
-        if (upperFileName.contains("CDQYC")) {
-            return IndicatorTypeEnum.CDQ;
-        } else if (upperFileName.contains("DQYC")) {
-            return IndicatorTypeEnum.DQ;
+        if (indicatorType == IndicatorTypeEnum.DQ) {
+            return upperFileName.contains("DQYC") && !upperFileName.contains("CDQYC");
+        } else if (indicatorType == IndicatorTypeEnum.CDQ) {
+            return upperFileName.contains("CDQYC");
         }
-        
-        return null;
+        return false;
     }
 }

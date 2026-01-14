@@ -31,6 +31,36 @@ public class SftpFileParserNeimeng extends SftpFileParser {
 
     private StationService stationService;
 
+    @Override
+    public List<PowerForecastData> parseFile(String path) {
+        // 从路径中提取文件名和目录信息
+        String fileName = getFileName(path);
+        IndicatorTypeEnum indicatorType = determineIndicatorTypeFromFileName(fileName);
+        if (indicatorType == null) {
+            log.warn("无法确定指标类型，跳过文件: {}", path);
+            return new ArrayList<>();
+        }
+
+        try (InputStream in = java.nio.file.Files.newInputStream(java.nio.file.Paths.get(path))) {
+            return parseForecastFileFromSftp(indicatorType, in, path, fileName);
+        } catch (Exception e) {
+            log.error("解析文件失败: {}", path, e);
+            return new ArrayList<>();
+        }
+    }
+
+    /**
+     * 从文件名确定指标类型
+     */
+    private IndicatorTypeEnum determineIndicatorTypeFromFileName(String fileName) {
+        for (IndicatorTypeEnum type : IndicatorTypeEnum.values()) {
+            if (type.checkFileName(fileName)) {
+                return type;
+            }
+        }
+        return null;
+    }
+
     public List<PowerForecastData> parseForecastFileFromSftp(IndicatorTypeEnum indicatorType, InputStream in,
                                                              String filePath, String filename) {
         // === 2. 流式读取并解析 ===

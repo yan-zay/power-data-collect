@@ -33,11 +33,41 @@ public class SftpFileParserGuangxi extends SftpFileParser {
 
     private StationService stationService;
 
+    @Override
+    public List<PowerForecastData> parseFile(String path) {
+        // 从路径中提取文件名和目录信息
+        String fileName = getFileName(path);
+        IndicatorTypeEnum indicatorType = determineIndicatorTypeFromFileName(fileName);
+        if (indicatorType == null) {
+            log.warn("无法确定指标类型，跳过文件: {}", path);
+            return new ArrayList<>();
+        }
+
+        try (InputStream in = java.nio.file.Files.newInputStream(java.nio.file.Paths.get(path))) {
+            return parseForecastFileFromSftp(indicatorType, in, path, fileName);
+        } catch (Exception e) {
+            log.error("解析文件失败: {}", path, e);
+            return new ArrayList<>();
+        }
+    }
+
+    /**
+     * 从文件名确定指标类型
+     */
+    private IndicatorTypeEnum determineIndicatorTypeFromFileName(String fileName) {
+        String upperFileName = fileName.toUpperCase();
+        if (upperFileName.contains("CDQYC")) {
+            return IndicatorTypeEnum.CDQ;
+        } else if (upperFileName.contains("DQYC")) {
+            return IndicatorTypeEnum.DQ;
+        }
+        return null;
+    }
+
     /**
      * 从远程 SFTP 读取并解析预测数据文件（广西地区特殊格式）
      * 解析包含 CDQYC 和 DQYC 后缀的文件
      */
-    @Override
     public List<PowerForecastData> parseForecastFileFromSftp(IndicatorTypeEnum indicatorType, InputStream in,
                                                              String filePath, String filename) {
         // === 2. 流式读取并解析 ===
@@ -138,7 +168,7 @@ public class SftpFileParserGuangxi extends SftpFileParser {
             return result;
         } catch (Exception e) {
             log.error("❌ 读取或解析文件失败: {}", e.getMessage(), e);
-            return null;
+            return new ArrayList<>();
         }
     }
 

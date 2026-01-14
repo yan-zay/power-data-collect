@@ -14,6 +14,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -33,11 +34,43 @@ public class SftpFileParserLongjiang extends SftpFileParser {
 
     private StationService stationService;
 
+    @Override
+    public List<PowerForecastData> parseFile(String path) {
+        // 从路径中提取文件名和目录信息
+        String fileName = getFileName(path);
+        IndicatorTypeEnum indicatorType = determineIndicatorTypeFromFileName(fileName);
+        if (indicatorType == null) {
+            log.warn("无法确定指标类型，跳过文件: {}", path);
+            return new ArrayList<>();
+        }
+
+        try (InputStream in = Files.newInputStream(java.nio.file.Paths.get(path))) {
+            return parseForecastFileFromSftp(indicatorType, in, path, fileName);
+        } catch (Exception e) {
+            log.error("解析文件失败: {}", path, e);
+            return new ArrayList<>();
+        }
+    }
+
+    /**
+     * 从文件名确定指标类型
+     */
+    private IndicatorTypeEnum determineIndicatorTypeFromFileName(String fileName) {
+        if (fileName != null) {
+            fileName = fileName.toUpperCase();
+            if (fileName.contains(IndicatorTypeEnum.DQ.getName()) && !fileName.contains(IndicatorTypeEnum.CDQ.getName())) {
+                return IndicatorTypeEnum.DQ;
+            } else if (fileName.contains(IndicatorTypeEnum.CDQ.getName())) {
+                return IndicatorTypeEnum.CDQ;
+            }
+        }
+        return null;
+    }
+
     /**
      * 从远程 SFTP 读取并解析预测数据文件（黑龙江地区特殊格式）
      * 解析包含 DQ 和 CDQ 后缀的文件
      */
-    @Override
     public List<PowerForecastData> parseForecastFileFromSftp(IndicatorTypeEnum indicatorType, InputStream in,
                                                              String filePath, String filename) {
         // === 2. 流式读取并解析 ===
@@ -81,7 +114,7 @@ public class SftpFileParserLongjiang extends SftpFileParser {
             return result;
         } catch (Exception e) {
             log.error("❌ 读取或解析文件失败: {}", e.getMessage(), e);
-            return null;
+            return new ArrayList<>();
         }
     }
 
