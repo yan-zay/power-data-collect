@@ -10,7 +10,7 @@ mybatis-plus:
 
 spring:
   profiles:
-    active: prod-neimeng
+    active: prod-zzz
   datasource:
     url: jdbc:mysql://localhost:3306/test?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=Asia/Shanghai&allowMultiQueries=true
     username: root
