@@ -28,11 +28,10 @@ public class SftpDownloaderGuangxi extends SftpDownloader {
         List<String> filePaths = new ArrayList<>();
         try {
             // 列出远程目录下的所有条目
-            Vector<?> entries = sftp.ls(remoteDir);
+            Vector<ChannelSftp.LsEntry> entries = sftp.ls(remoteDir);
             
             if (entries != null) {
-                for (Object entryObj : entries) {
-                    com.jcraft.jsch.ChannelSftp.LsEntry entry = (com.jcraft.jsch.ChannelSftp.LsEntry) entryObj;
+                for (ChannelSftp.LsEntry entry : entries) {
                     String fileName = entry.getFilename();
                     
                     // 跳过当前目录和父目录
@@ -60,11 +59,10 @@ public class SftpDownloaderGuangxi extends SftpDownloader {
      */
     private void collectFilePathsFromDateDirectory(ChannelSftp sftp, String dateDir, IndicatorTypeEnum indicatorType, List<String> filePaths) {
         try {
-            Vector<?> entries = sftp.ls(dateDir);
+            Vector<ChannelSftp.LsEntry> entries = sftp.ls(dateDir);
             
             if (entries != null) {
-                for (Object entryObj : entries) {
-                    com.jcraft.jsch.ChannelSftp.LsEntry entry = (com.jcraft.jsch.ChannelSftp.LsEntry) entryObj;
+                for (ChannelSftp.LsEntry entry : entries) {
                     String fileName = entry.getFilename();
                     
                     // 跳过当前目录和父目录

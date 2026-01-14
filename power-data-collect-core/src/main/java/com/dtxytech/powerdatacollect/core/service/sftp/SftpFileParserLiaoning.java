@@ -42,7 +42,7 @@ public class SftpFileParserLiaoning extends SftpFileParser {
         // 从路径中提取文件名和目录信息
         String fileName = getFileName(path);
 
-        try (InputStream in = sftp.get(path)) {
+        try (InputStream in = Files.newInputStream(Paths.get(path))) {
             return parseForecastFileFromSftp(in, path, fileName);
         } catch (Exception e) {
             log.error("解析文件失败: {}", path, e);
