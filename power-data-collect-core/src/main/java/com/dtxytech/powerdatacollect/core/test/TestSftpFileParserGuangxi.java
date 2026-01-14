@@ -41,10 +41,7 @@ public class TestSftpFileParserGuangxi {
                 // 打印前10条记录的详细信息
                 for (int i = 0; i < Math.min(10, results.size()); i++) {
                     PowerForecastData data = results.get(i);
-                    log.info("第{}条记录: collectTime={}, forecastTime={}, stationCode={}, indexCode={}, energyType={}, forecastValue={}, orderNo={}",
-                        data.getOrderNo(), data.getCollectTime(), data.getForecastTime(),
-                        data.getStationCode(), data.getIndexCode(), data.getEnergyType(),
-                        data.getForecastValue(), data.getOrderNo());
+                    log.info("第{}条记录: data={}", data.getOrderNo(), data);
                 }
             } else {
                 log.error("DQ文件解析失败");
