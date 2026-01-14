@@ -35,7 +35,5 @@ public abstract class SftpDownloader {
     @Autowired
     protected SftpProperties sftpProperties;
 
-    protected abstract List<String> getAllFilePath(ChannelSftp sftp, String remoteDir, IndicatorTypeEnum indicatorType);
-
-    protected abstract void downloadAndParseAllFile(ChannelSftp sftp, String remoteDir, IndicatorTypeEnum indicatorType);
+    protected abstract List<String> getAllFilePath(IndicatorTypeEnum indicatorType, ChannelSftp sftp, String remoteDir);
 }

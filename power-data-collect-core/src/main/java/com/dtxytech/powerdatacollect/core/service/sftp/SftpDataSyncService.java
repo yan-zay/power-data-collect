@@ -32,14 +32,13 @@ public class SftpDataSyncService {
     public void syncFileList(IndicatorTypeEnum indicatorType) {
         ChannelSftp sftp = sftpConnectionManager.getCurrentSftp();
         try {
-            sftpRecursiveDownloader.downloadAndParseAllFile(sftp, sftpProperties.getRemoteDir(), indicatorType);
-            List<String> pathList = sftpRecursiveDownloader.getAllFilePath(sftp, sftpProperties.getRemoteDir(), indicatorType);
+            List<String> pathList = sftpRecursiveDownloader.getAllFilePath(indicatorType, sftp, sftpProperties.getRemoteDir());
             List<List<String>> batchList = Lists.partition(pathList, BATCH_SIZE);
             for (List<String> batch : batchList) {
                 processPathList(batch);
             }
         } catch (Exception e) {
-            log.error("Process station failed sftpProperties.getRemoteDir(): {}, indicatorType: {},", sftpProperties.getRemoteDir(), indicatorType, e);
+            log.error("SftpDataSyncService syncFileList , indicatorType: {}, sftp: {}, remoteDir: {}", indicatorType, sftp, sftpProperties.getRemoteDir(), e);
         }
     }
 
