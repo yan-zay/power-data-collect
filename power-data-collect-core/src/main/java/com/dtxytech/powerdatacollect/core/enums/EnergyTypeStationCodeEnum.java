@@ -42,8 +42,8 @@ public enum EnergyTypeStationCodeEnum {
 
     private final String energyType;
     private final String energyTypeName;
-    private final String stationName;
     private final String stationCode;
+    private final String stationName;
 
 
     public static String getByStationCode(String stationCode) {
