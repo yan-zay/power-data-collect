@@ -1,5 +1,6 @@
 package com.dtxytech.powerdatacollect.core.service.sftp;
 
+import com.alibaba.fastjson2.JSON;
 import com.dtxytech.powerdatacollect.core.enums.IndicatorTypeEnum;
 import com.dtxytech.powerdatacollect.core.task.SyncFetchFileTask;
 import com.jcraft.jsch.ChannelSftp;
@@ -61,13 +62,14 @@ public class SftpDownloaderLiaoning extends SftpDownloader {
                 recurseCollectFilePaths(sftp, fullPath, indicatorType, filePaths);
             } else {
                 // 是文件，检查是否符合指标类型并添加到路径列表
-                if (indicatorType.checkFileName(dirName)) {
-                    log.info("判断文件是否过期fileName: {}", dirName);
-                    if (checkDir(dirName)) {
-                        continue;
-                    }
-                    filePaths.add(fullPath);
+//                if (indicatorType.checkFileName(dirName)) {
+                if (checkDir(dirName)) {
+                    log.info("time: {}", dirName);
+                    continue;
                 }
+                log.info("filePaths: {}", fullPath);
+                filePaths.add(fullPath);
+//                }
             }
         }
     }

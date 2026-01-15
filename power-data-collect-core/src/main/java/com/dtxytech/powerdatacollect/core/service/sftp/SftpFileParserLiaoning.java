@@ -1,5 +1,6 @@
 package com.dtxytech.powerdatacollect.core.service.sftp;
 
+import com.alibaba.fastjson2.JSON;
 import com.dtxytech.powerdatacollect.core.entity.PowerForecastData;
 import com.dtxytech.powerdatacollect.core.enums.EnergyTypeStationCodeEnum;
 import com.dtxytech.powerdatacollect.core.enums.IndicatorTypeEnum;
@@ -17,6 +18,8 @@ import java.io.*;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -42,10 +45,10 @@ public class SftpFileParserLiaoning extends SftpFileParser {
         // 从路径中提取文件名和目录信息
         String fileName = getFileName(path);
 
-        try (InputStream in = Files.newInputStream(Paths.get(path))) {
+        try (InputStream in = sftp.get(path)) {
             return parseForecastFileFromSftp(in, path, fileName);
         } catch (Exception e) {
-            log.error("解析文件失败: {}", path, e);
+            log.error("SftpFileParserNeimeng 解析文件失败: {}", path, e);
             return new ArrayList<>();
         }
     }
@@ -70,6 +73,7 @@ public class SftpFileParserLiaoning extends SftpFileParser {
             }
             // 推断 stationId：从 fileName 提取前缀（如 DTDL4_... → DTDL4）
             String stationCode = getPathPart(filePath, 4);
+            log.info("parseForecastFileFromSftp dataLines:jsonStr:{}", JSON.toJSONString(dataLines));
             log.info("parseForecastFileFromSftp stationCode:{}", stationCode);
 
             return getListDate(filePath, filename, stationCode, forecastTimeStr, dataLines);
@@ -144,6 +148,12 @@ public class SftpFileParserLiaoning extends SftpFileParser {
         if (forecastTimeStr == null || forecastTimeStr.isEmpty()) {
             return null;
         }
+        // 处理纯数字格式 yyyymmddhhmm
+        if (forecastTimeStr.matches("\\d{12}")) {
+            return LocalDateTime.parse(forecastTimeStr,
+                    DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
+        }
+
         String normalizedTimeStr = forecastTimeStr.replace("_", " ");
 
         // 根据字符串长度判断是哪种格式
@@ -168,8 +178,9 @@ public class SftpFileParserLiaoning extends SftpFileParser {
             return "";
         }
         String[] parts = filePath.split("/");
-        if (parts.length >= part + 1) { // 路径以/开头会产生一个空的第一项
-            return parts[part]; // 第五项实际上是第四级目录
+        // 获取倒数第二部分（目录名）
+        if (parts.length >= 2) {
+            return parts[parts.length - 2];
         }
         log.error("Invalid file filePath:{}, part:{}", filePath, part);
         return "";
