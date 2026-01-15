@@ -14,8 +14,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,8 +42,8 @@ public class SftpFileParserLongjiang extends SftpFileParser {
             return new ArrayList<>();
         }
 
-        try (InputStream in = Files.newInputStream(Paths.get(path))) {
-            return parseForecastFileFromSftp(indicatorType, in, path, fileName);
+        try (InputStream in = sftp.get(path)) {
+            return doParseFile(indicatorType, in, path, fileName);
         } catch (Exception e) {
             log.error("解析文件失败: {}", path, e);
             return new ArrayList<>();
@@ -71,8 +69,8 @@ public class SftpFileParserLongjiang extends SftpFileParser {
      * 从远程 SFTP 读取并解析预测数据文件（黑龙江地区特殊格式）
      * 解析包含 DQ 和 CDQ 后缀的文件
      */
-    public List<PowerForecastData> parseForecastFileFromSftp(IndicatorTypeEnum indicatorType, InputStream in,
-                                                             String filePath, String filename) {
+    public List<PowerForecastData> doParseFile(IndicatorTypeEnum indicatorType, InputStream in,
+                                               String filePath, String filename) {
         // === 2. 流式读取并解析 ===
         try {
             BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
