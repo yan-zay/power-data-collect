@@ -1,6 +1,7 @@
 package com.dtxytech.powerdatacollect.core.service.sftp;
 
 import com.dtxytech.powerdatacollect.core.enums.IndicatorTypeEnum;
+import com.dtxytech.powerdatacollect.core.task.SyncFetchFileTask;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.SftpException;
 import lombok.AllArgsConstructor;
@@ -8,6 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
@@ -33,18 +36,14 @@ public class SftpDownloaderLongjiang extends SftpDownloader {
             Vector<ChannelSftp.LsEntry> entries = sftp.ls(remoteDir);
             log.info("SftpDataSyncService syncFileList indicatorType:{}, remoteDir:{}, entries:{}", indicatorType, remoteDir, entries);
             for (ChannelSftp.LsEntry entry : entries) {
-                log.info("SftpDownloaderLongjiang tag 0001, entry:{}", entry);
                 String fileName = entry.getFilename();
 
                 // 跳过当前目录和父目录
                 if (".".equals(fileName) || "..".equals(fileName)) {
-                    log.info("SftpDownloaderLongjiang tag 0002");
                     continue;
                 }
-                log.info("SftpDownloaderLongjiang tag 0003");
                 // 检查是否是目录且不是需要跳过的目录
                 if (entry.getAttrs().isDir() && !isSkippedStation(fileName)) {
-                    log.info("SftpDownloaderLongjiang tag 0004");
                     String stationCode = fileName; // 目录名作为场站编码
                     String stationDir = remoteDir + "/" + stationCode;
 
@@ -62,7 +61,6 @@ public class SftpDownloaderLongjiang extends SftpDownloader {
      * 从场站目录收集文件路径
      */
     private void collectFilePathsFromStation(ChannelSftp sftp, String stationDir, String stationCode, IndicatorTypeEnum indicatorType, List<String> filePaths) {
-        log.info("SftpDownloaderLongjiang tag 0005");
         try {
             Vector<ChannelSftp.LsEntry> entries = sftp.ls(stationDir);
             for (ChannelSftp.LsEntry entry : entries) {
@@ -88,7 +86,6 @@ public class SftpDownloaderLongjiang extends SftpDownloader {
      * 从bak目录收集文件路径
      */
     private void collectFilePathsFromBak(ChannelSftp sftp, String bakDir, String stationCode, IndicatorTypeEnum indicatorType, List<String> filePaths) {
-        log.info("SftpDownloaderLongjiang tag 0006");
         try {
             Vector<ChannelSftp.LsEntry> entries = sftp.ls(bakDir);
             for (ChannelSftp.LsEntry entry : entries) {
@@ -100,7 +97,7 @@ public class SftpDownloaderLongjiang extends SftpDownloader {
                 }
 
                 // 假设目录名是日期格式（如 2025-10-23），检查是否是目录
-                if (entry.getAttrs().isDir()) {
+                if (entry.getAttrs().isDir() && checkDirDate(fileName)){
                     String dateDir = bakDir + "/" + fileName;
                     collectFilePathsFromDateDir(sftp, dateDir, stationCode, indicatorType, filePaths);
                 }
@@ -111,10 +108,34 @@ public class SftpDownloaderLongjiang extends SftpDownloader {
     }
 
     /**
+     * 验证文件名中的日期格式是否为yyyy-MM-dd且日期是否满足要求
+     * 如果已初始化，则日期必须大于等于今天；否则，日期必须大于等于配置的起始日期
+     */
+    private boolean checkDirDate(String fileName) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        String configDateStr = sftpProperties.getFileStartDate();
+        if (fileName.length() != 10) {
+            return false;
+        }
+        LocalDate fileDate = LocalDate.parse(fileName, formatter);
+        LocalDate configDate = LocalDate.parse(configDateStr, formatter);
+        // 检查是否大于等于起始日期
+        if (fileDate.isEqual(configDate) || fileDate.isAfter(configDate)) {
+            return true;
+        }
+        // 如果已初始化，检查是否大于等于今天
+        LocalDate now = LocalDate.now();
+        if (SyncFetchFileTask.INITIALIZED && (fileDate.isEqual(now) || fileDate.isAfter(now))) {
+            return true;
+        }
+        return false;
+    }
+
+
+    /**
      * 从日期目录收集文件路径
      */
     private void collectFilePathsFromDateDir(ChannelSftp sftp, String dateDir, String stationCode, IndicatorTypeEnum indicatorType, List<String> filePaths) {
-        log.info("SftpDownloaderLongjiang tag 0007");
         try {
             Vector<ChannelSftp.LsEntry> entries = sftp.ls(dateDir);
             for (ChannelSftp.LsEntry entry : entries) {
@@ -126,7 +147,7 @@ public class SftpDownloaderLongjiang extends SftpDownloader {
                 }
 
                 // 检查是否是WPD文件且符合指标类型
-                if (fileName.toLowerCase().endsWith(".wpd") && isMatchingFileType(fileName, indicatorType)) {
+                if (fileName.toLowerCase().endsWith(".WPD") && isMatchingFileType(fileName, indicatorType)) {
                     String filePath = dateDir + "/" + fileName;
                     filePaths.add(filePath);
                 }
