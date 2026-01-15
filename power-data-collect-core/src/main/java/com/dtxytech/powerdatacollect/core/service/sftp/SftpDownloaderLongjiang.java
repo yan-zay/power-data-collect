@@ -31,16 +31,20 @@ public class SftpDownloaderLongjiang extends SftpDownloader {
         try {
             // 首先列出根目录下的所有子目录（场站文件夹）
             Vector<ChannelSftp.LsEntry> entries = sftp.ls(remoteDir);
+            log.info("SftpDataSyncService syncFileList indicatorType:{}, remoteDir:{}, entries:{}", indicatorType, remoteDir, entries);
             for (ChannelSftp.LsEntry entry : entries) {
+                log.info("SftpDownloaderLongjiang tag 0001, entry:{}", entry);
                 String fileName = entry.getFilename();
 
                 // 跳过当前目录和父目录
                 if (".".equals(fileName) || "..".equals(fileName)) {
+                    log.info("SftpDownloaderLongjiang tag 0002");
                     continue;
                 }
-
+                log.info("SftpDownloaderLongjiang tag 0003");
                 // 检查是否是目录且不是需要跳过的目录
                 if (entry.getAttrs().isDir() && !isSkippedStation(fileName)) {
+                    log.info("SftpDownloaderLongjiang tag 0004");
                     String stationCode = fileName; // 目录名作为场站编码
                     String stationDir = remoteDir + "/" + stationCode;
 
@@ -58,6 +62,7 @@ public class SftpDownloaderLongjiang extends SftpDownloader {
      * 从场站目录收集文件路径
      */
     private void collectFilePathsFromStation(ChannelSftp sftp, String stationDir, String stationCode, IndicatorTypeEnum indicatorType, List<String> filePaths) {
+        log.info("SftpDownloaderLongjiang tag 0005");
         try {
             Vector<ChannelSftp.LsEntry> entries = sftp.ls(stationDir);
             for (ChannelSftp.LsEntry entry : entries) {
@@ -83,6 +88,7 @@ public class SftpDownloaderLongjiang extends SftpDownloader {
      * 从bak目录收集文件路径
      */
     private void collectFilePathsFromBak(ChannelSftp sftp, String bakDir, String stationCode, IndicatorTypeEnum indicatorType, List<String> filePaths) {
+        log.info("SftpDownloaderLongjiang tag 0006");
         try {
             Vector<ChannelSftp.LsEntry> entries = sftp.ls(bakDir);
             for (ChannelSftp.LsEntry entry : entries) {
@@ -108,6 +114,7 @@ public class SftpDownloaderLongjiang extends SftpDownloader {
      * 从日期目录收集文件路径
      */
     private void collectFilePathsFromDateDir(ChannelSftp sftp, String dateDir, String stationCode, IndicatorTypeEnum indicatorType, List<String> filePaths) {
+        log.info("SftpDownloaderLongjiang tag 0007");
         try {
             Vector<ChannelSftp.LsEntry> entries = sftp.ls(dateDir);
             for (ChannelSftp.LsEntry entry : entries) {
