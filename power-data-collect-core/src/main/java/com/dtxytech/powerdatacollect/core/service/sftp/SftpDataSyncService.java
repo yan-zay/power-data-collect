@@ -1,8 +1,8 @@
 package com.dtxytech.powerdatacollect.core.service.sftp;
 
+import com.dtxytech.powerdatacollect.core.config.SftpProperties;
 import com.dtxytech.powerdatacollect.core.entity.PowerForecastData;
 import com.dtxytech.powerdatacollect.core.enums.IndicatorTypeEnum;
-import com.dtxytech.powerdatacollect.core.config.SftpProperties;
 import com.dtxytech.powerdatacollect.core.service.power.PowerForecastDataService;
 import com.google.common.collect.Lists;
 import com.jcraft.jsch.ChannelSftp;

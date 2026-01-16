@@ -38,16 +38,11 @@ public class SftpFileParserNeimeng extends SftpFileParser {
     public List<PowerForecastData> parseFile(IndicatorTypeEnum indicatorType, ChannelSftp sftp, String path) {
         // 从路径中提取文件名和目录信息
         String fileName = getFileName(path);
-        IndicatorTypeEnum indicatorType2 = determineIndicatorTypeFromFileName(fileName);
-        if (indicatorType == null) {
-            log.warn("无法确定指标类型，跳过文件: {}", path);
-            return new ArrayList<>();
-        }
 
         try (InputStream in = sftp.get(path)) {
             return doParseFile(indicatorType, in, path, fileName);
         } catch (Exception e) {
-            log.error("SftpFileParserNeimeng 解析文件失败: {}", path, e);
+            log.error("SftpFileParserNeimeng parseFile 解析文件失败 path:{}", path, e);
             return new ArrayList<>();
         }
     }

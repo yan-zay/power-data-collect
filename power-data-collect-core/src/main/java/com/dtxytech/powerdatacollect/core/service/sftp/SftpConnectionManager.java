@@ -1,7 +1,10 @@
 package com.dtxytech.powerdatacollect.core.service.sftp;
 
 import com.dtxytech.powerdatacollect.core.config.SftpProperties;
-import com.jcraft.jsch.*;
+import com.jcraft.jsch.ChannelSftp;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.Session;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 

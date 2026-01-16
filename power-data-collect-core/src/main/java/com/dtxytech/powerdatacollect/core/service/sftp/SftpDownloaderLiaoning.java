@@ -1,6 +1,5 @@
 package com.dtxytech.powerdatacollect.core.service.sftp;
 
-import com.alibaba.fastjson2.JSON;
 import com.dtxytech.powerdatacollect.core.enums.IndicatorTypeEnum;
 import com.dtxytech.powerdatacollect.core.task.SyncFetchFileTask;
 import com.jcraft.jsch.ChannelSftp;

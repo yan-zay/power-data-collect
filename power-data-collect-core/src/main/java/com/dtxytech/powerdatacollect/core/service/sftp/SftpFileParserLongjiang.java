@@ -10,6 +10,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
@@ -36,11 +37,6 @@ public class SftpFileParserLongjiang extends SftpFileParser {
     public List<PowerForecastData> parseFile(IndicatorTypeEnum indicatorType, ChannelSftp sftp, String path) {
         // 从路径中提取文件名和目录信息
         String fileName = getFileName(path);
-        IndicatorTypeEnum indicatorType2 = determineIndicatorTypeFromFileName(fileName);
-        if (indicatorType == null) {
-            log.warn("无法确定指标类型，跳过文件: {}", path);
-            return new ArrayList<>();
-        }
 
         try (InputStream in = sftp.get(path)) {
             return doParseFile(indicatorType, in, path, fileName);
@@ -101,7 +97,7 @@ public class SftpFileParserLongjiang extends SftpFileParser {
 
                 // 根据指标类型选择解析特定的数据块
                 if (indicatorType == IndicatorTypeEnum.DQ && line.contains("<ShortTermForcast::")) {
-                    result.addAll(parseShortTermForcastBlock(reader, indicatorType, filePath, filename, stationCode, forecastTimeStr));
+                    result.addAll(parseShortTermForecastBlock(reader, indicatorType, filePath, filename, stationCode, forecastTimeStr));
                 } else if (indicatorType == IndicatorTypeEnum.CDQ && line.contains("<UltraShortTermForcast_P2P::")) {
                     result.addAll(parseUltraShortTermForcastP2PBlock(reader, indicatorType, filePath, filename, stationCode, forecastTimeStr));
                 }
@@ -111,7 +107,7 @@ public class SftpFileParserLongjiang extends SftpFileParser {
 
             return result;
         } catch (Exception e) {
-            log.error("❌ 读取或解析文件失败: {}", e.getMessage(), e);
+            log.error("读取或解析文件失败 SftpFileParserLongjiang doParseFile e:{}", e.getMessage(), e);
             return new ArrayList<>();
         }
     }
@@ -130,9 +126,9 @@ public class SftpFileParserLongjiang extends SftpFileParser {
     /**
      * 解析短期预测功率数据块 (DQ - ShortTermForcast)
      */
-    private List<PowerForecastData> parseShortTermForcastBlock(BufferedReader reader, IndicatorTypeEnum indicatorType, 
-                                                            String filePath, String filename, String stationCode, 
-                                                            String forecastTimeStr) throws java.io.IOException {
+    private List<PowerForecastData> parseShortTermForecastBlock(BufferedReader reader, IndicatorTypeEnum indicatorType,
+                                                                String filePath, String filename, String stationCode,
+                                                                String forecastTimeStr) throws IOException {
         List<PowerForecastData> result = new ArrayList<>();
         String line;
         LocalDateTime baseForecastTime = parseForecastTimeStr(forecastTimeStr);
@@ -181,7 +177,7 @@ public class SftpFileParserLongjiang extends SftpFileParser {
      */
     private List<PowerForecastData> parseUltraShortTermForcastP2PBlock(BufferedReader reader, IndicatorTypeEnum indicatorType, 
                                                                  String filePath, String filename, String stationCode, 
-                                                                 String forecastTimeStr) throws java.io.IOException {
+                                                                 String forecastTimeStr) throws IOException {
         List<PowerForecastData> result = new ArrayList<>();
         String line;
         LocalDateTime baseForecastTime = parseForecastTimeStr(forecastTimeStr);
