@@ -89,10 +89,21 @@ public class SftpFileParserLiaoning extends SftpFileParser {
         String[] parts = filePath.split("[\\\\/]");
         String lastPart = parts[parts.length - 1];
         String[] split = filename.split("_");
+        String indexCode="";
         if(IndicatorTypeEnum.DQ.getName().toUpperCase().equals(lastPart)==true){
             forecastTimeStr=split[1];
-        }else {
+            indexCode=IndicatorTypeEnum.DQ.getValue();
+        }else if(IndicatorTypeEnum.CDQ.getName().toUpperCase().equals(lastPart)==true){
             forecastTimeStr=split[1]+split[split.length-1].replace(".xml","");
+            indexCode=IndicatorTypeEnum.CDQ.getValue();
+        }else {
+            if(dataLines.size()==16){
+                indexCode=IndicatorTypeEnum.CDQ.getValue();
+            }else if(dataLines.size()==96){
+                indexCode=IndicatorTypeEnum.DQ.getValue();
+            }else {
+                log.error("未获取到指标类型", lastPart);
+            }
         }
         LocalDateTime collectTime = parseForecastTimeStr(forecastTimeStr);
         LocalDateTime forecastTime = parseForecastTimeStr(forecastTimeStr);
@@ -111,7 +122,7 @@ public class SftpFileParserLiaoning extends SftpFileParser {
                     .collectTime(collectTime)
                     .forecastTime(forecastTime)
                     .stationCode(stationCode)
-                    .indexCode(IndicatorTypeEnum.DQ.getName().toUpperCase().equals(lastPart)==true?IndicatorTypeEnum.DQ.getValue():IndicatorTypeEnum.CDQ.getValue())
+                    .indexCode(indexCode)
                     .energyType(EnergyTypeStationCodeEnum.getByStationCode(stationCode))//?
 
                     .assetCode(stationId)
