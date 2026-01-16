@@ -33,10 +33,10 @@ public class SftpFileParserLongjiang extends SftpFileParser {
     private StationService stationService;
 
     @Override
-    public List<PowerForecastData> parseFile(ChannelSftp sftp, String path) {
+    public List<PowerForecastData> parseFile(IndicatorTypeEnum indicatorType, ChannelSftp sftp, String path) {
         // 从路径中提取文件名和目录信息
         String fileName = getFileName(path);
-        IndicatorTypeEnum indicatorType = determineIndicatorTypeFromFileName(fileName);
+        IndicatorTypeEnum indicatorType2 = determineIndicatorTypeFromFileName(fileName);
         if (indicatorType == null) {
             log.warn("无法确定指标类型，跳过文件: {}", path);
             return new ArrayList<>();
@@ -107,7 +107,7 @@ public class SftpFileParserLongjiang extends SftpFileParser {
                 }
             }
 
-            log.info("parseForecastFileFromSftp stationCode:{}, result size:{}", stationCode, result.size());
+            log.info("doParseFile stationCode:{}, result size:{}", stationCode, result.size());
 
             return result;
         } catch (Exception e) {

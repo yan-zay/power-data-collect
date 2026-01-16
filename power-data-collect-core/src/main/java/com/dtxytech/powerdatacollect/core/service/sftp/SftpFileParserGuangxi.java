@@ -14,12 +14,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -36,26 +35,18 @@ public class SftpFileParserGuangxi extends SftpFileParser {
     private StationService stationService;
 
     @Override
-    public List<PowerForecastData> parseFile(ChannelSftp sftp, String path) {
+    public List<PowerForecastData> parseFile(IndicatorTypeEnum indicatorType, ChannelSftp sftp, String path) {
         // 从路径中提取文件名和目录信息
         String fileName = getFileName(path);
-        IndicatorTypeEnum indicatorType = determineIndicatorTypeFromFileName(fileName);
-        if (indicatorType == null) {
-            log.warn("无法确定指标类型，跳过文件: {}", path);
-            return new ArrayList<>();
-        }
 
         try (InputStream in = sftp.get(path)) {
-            return parseForecastFileFromSftp(indicatorType, in, path, fileName);
+            return doParseFile(indicatorType, in, path, fileName);
         } catch (Exception e) {
-            log.error("解析文件失败: {}", path, e);
+            log.error("解析文件失败 SftpFileParserGuangxi parseFile path:{}", path, e);
             return new ArrayList<>();
         }
     }
 
-    /**
-     * 从文件名确定指标类型
-     */
     private IndicatorTypeEnum determineIndicatorTypeFromFileName(String fileName) {
         String upperFileName = fileName.toUpperCase();
         if (upperFileName.contains("CDQYC")) {
@@ -70,7 +61,7 @@ public class SftpFileParserGuangxi extends SftpFileParser {
      * 从远程 SFTP 读取并解析预测数据文件（广西地区特殊格式）
      * 解析包含 CDQYC 和 DQYC 后缀的文件
      */
-    public List<PowerForecastData> parseForecastFileFromSftp(IndicatorTypeEnum indicatorType, InputStream in,
+    public List<PowerForecastData> doParseFile(IndicatorTypeEnum indicatorType, InputStream in,
                                                              String filePath, String filename) {
         // === 2. 流式读取并解析 ===
         try {
@@ -91,9 +82,7 @@ public class SftpFileParserGuangxi extends SftpFileParser {
 
             while ((line = reader.readLine()) != null) {
                 line = line.trim();
-
                 if (line.isEmpty()) continue;
-
                 // 跳过注释行
                 if (line.startsWith("//")) {
                     continue;
@@ -127,8 +116,8 @@ public class SftpFileParserGuangxi extends SftpFileParser {
                     }
                     
                     // 检查是否应该处理此数据块
-                    if ((indicatorType == IndicatorTypeEnum.DQ && currentBlockType.equals("DQYC")) ||
-                        (indicatorType == IndicatorTypeEnum.CDQ && currentBlockType.equals("CDQYC"))) {
+                    if ((indicatorType == IndicatorTypeEnum.DQ && Objects.equals(currentBlockType, "DQYC")) ||
+                        (indicatorType == IndicatorTypeEnum.CDQ && Objects.equals(currentBlockType, "CDQYC"))) {
                         insideDataBlock = true;
                     }
                     continue;
@@ -153,11 +142,11 @@ public class SftpFileParserGuangxi extends SftpFileParser {
                         if (currentBlockType != null) {
                             if (currentBlockType.equals("DQYC") && indicatorType == IndicatorTypeEnum.DQ) {
                                 // 解析DQYC数据
-                                result.addAll(parseSingleDQYCLine(line, indicatorType, filePath, filename, 
+                                result.addAll(parseDQYCLine(line, indicatorType, filePath, filename, 
                                                                 stationCode, forecastTimeStr, result.size() + 1));
                             } else if (currentBlockType.equals("CDQYC") && indicatorType == IndicatorTypeEnum.CDQ) {
                                 // 解析CDQYC数据
-                                result.addAll(parseSingleCDQYCLine(line, indicatorType, filePath, filename, 
+                                result.addAll(parseCDQYCLine(line, indicatorType, filePath, filename, 
                                                                  stationCode, forecastTimeStr, result.size() + 1));
                             }
                         }
@@ -165,11 +154,11 @@ public class SftpFileParserGuangxi extends SftpFileParser {
                 }
             }
 
-            log.info("parseForecastFileFromSftp stationCode:{}, result size:{}", stationCode, result.size());
+            log.info("doParseFile stationCode:{}, result size:{}", stationCode, result.size());
 
             return result;
         } catch (Exception e) {
-            log.error("❌ 读取或解析文件失败: {}", e.getMessage(), e);
+            log.error("读取或解析文件失败 SftpFileParserGuangxi doParseFile e:{}", e.getMessage(), e);
             return new ArrayList<>();
         }
     }
@@ -177,9 +166,9 @@ public class SftpFileParserGuangxi extends SftpFileParser {
     /**
      * 解析单行DQYC数据
      */
-    private List<PowerForecastData> parseSingleDQYCLine(String line, IndicatorTypeEnum indicatorType, 
-                                                      String filePath, String filename, String stationCode, 
-                                                      String forecastTimeStr, int orderNo) {
+    private List<PowerForecastData> parseDQYCLine(String line, IndicatorTypeEnum indicatorType,
+                                                  String filePath, String filename, String stationCode,
+                                                  String forecastTimeStr, int orderNo) {
         List<PowerForecastData> result = new ArrayList<>();
         String[] parts = line.substring(1).trim().split("\\s+"); // 移除开头的#号
         
@@ -213,9 +202,9 @@ public class SftpFileParserGuangxi extends SftpFileParser {
     /**
      * 解析单行CDQYC数据
      */
-    private List<PowerForecastData> parseSingleCDQYCLine(String line, IndicatorTypeEnum indicatorType, 
-                                                       String filePath, String filename, String stationCode, 
-                                                       String forecastTimeStr, int orderNo) {
+    private List<PowerForecastData> parseCDQYCLine(String line, IndicatorTypeEnum indicatorType,
+                                                   String filePath, String filename, String stationCode,
+                                                   String forecastTimeStr, int orderNo) {
         List<PowerForecastData> result = new ArrayList<>();
         String[] parts = line.substring(1).trim().split("\\s+"); // 移除开头的#号
         
@@ -289,52 +278,6 @@ public class SftpFileParserGuangxi extends SftpFileParser {
             }
         }
         return null;
-    }
-
-    /**
-     * 解析短期预测功率数据块 (DQ - DQYC)
-     * 此方法不再使用，因为我们直接在主循环中处理每一行
-     */
-    @Deprecated
-    private List<PowerForecastData> parseDQYCBlock(BufferedReader reader, IndicatorTypeEnum indicatorType, 
-                                                            String filePath, String filename, String stationCode, 
-                                                            String forecastTimeStr) throws java.io.IOException {
-        // 这个方法已废弃，实际解析逻辑已在parseForecastFileFromSftp方法中实现
-        return new ArrayList<>();
-    }
-    
-    /**
-     * 处理DQYC数据行
-     * 此方法不再使用
-     */
-    @Deprecated
-    private void processDQYCDataLine(String line, List<PowerForecastData> result, IndicatorTypeEnum indicatorType,
-                                   String filePath, String filename, String stationCode, 
-                                   String forecastTimeStr, LocalDateTime baseForecastTime, int orderNo, int powerColumnIndex) {
-        // 这个方法已废弃
-    }
-
-    /**
-     * 解析超短期预测功率数据块 (CDQ - CDQYC)
-     * 此方法不再使用，因为我们直接在主循环中处理每一行
-     */
-    @Deprecated
-    private List<PowerForecastData> parseCDQYCBlock(BufferedReader reader, IndicatorTypeEnum indicatorType, 
-                                                                 String filePath, String filename, String stationCode, 
-                                                                 String forecastTimeStr) throws java.io.IOException {
-        // 这个方法已废弃，实际解析逻辑已在parseForecastFileFromSftp方法中实现
-        return new ArrayList<>();
-    }
-    
-    /**
-     * 处理CDQYC数据行
-     * 此方法不再使用
-     */
-    @Deprecated
-    private void processCDQYCDataLine(String line, List<PowerForecastData> result, IndicatorTypeEnum indicatorType,
-                                    String filePath, String filename, String stationCode, 
-                                    String forecastTimeStr, LocalDateTime baseForecastTime, int orderNo, int powerColumnIndex) {
-        // 这个方法已废弃
     }
 
     /**

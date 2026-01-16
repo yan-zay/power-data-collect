@@ -1,6 +1,7 @@
 package com.dtxytech.powerdatacollect.core.service.sftp;
 
 import com.dtxytech.powerdatacollect.core.entity.PowerForecastData;
+import com.dtxytech.powerdatacollect.core.enums.IndicatorTypeEnum;
 import com.dtxytech.powerdatacollect.core.service.station.StationService;
 import com.jcraft.jsch.ChannelSftp;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +21,7 @@ public abstract class SftpFileParser {
     @Autowired
     protected StationService stationService;
 
-    public abstract List<PowerForecastData> parseFile(ChannelSftp sftp, String path);
+    public abstract List<PowerForecastData> parseFile(IndicatorTypeEnum indicatorType, ChannelSftp sftp, String path);
 
     protected String getFileName(String path) {
         return path.substring(path.lastIndexOf('/') + 1);

@@ -38,7 +38,7 @@ public class TestSftpFileParserNeimeng {
 
         if (tempPath != null) {
             try {
-                List<PowerForecastData> results = parser.parseFile(null, tempPath.toString());
+                List<PowerForecastData> results = parser.parseFile(null, null, tempPath.toString());
 
                 if (results != null) {
                     System.out.println("DQ文件解析结果数量: " + results.size());
@@ -95,7 +95,7 @@ public class TestSftpFileParserNeimeng {
 
         if (tempPath != null) {
             try {
-                List<PowerForecastData> results = parser.parseFile(null, tempPath.toString());
+                List<PowerForecastData> results = parser.parseFile(null, null, tempPath.toString());
 
                 if (results != null) {
                     System.out.println("CDQ文件解析结果数量: " + results.size());

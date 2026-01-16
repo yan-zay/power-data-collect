@@ -38,17 +38,17 @@ public class SftpDataSyncService {
             log.info("SftpDataSyncService syncFileList pathList.size:{}", pathList.size());
             List<List<String>> batchList = Lists.partition(pathList, BATCH_SIZE);
             for (List<String> batch : batchList) {
-                processPathList(sftp, batch);
+                processPathList(indicatorType, sftp, batch);
             }
         } catch (Exception e) {
             log.error("SftpDataSyncService syncFileList , indicatorType: {}, sftp: {}, remoteDir: {}", indicatorType, sftp, sftpProperties.getRemoteDir(), e);
         }
     }
 
-    private void processPathList(ChannelSftp sftp, List<String> batch) {
+    private void processPathList(IndicatorTypeEnum indicatorType, ChannelSftp sftp, List<String> batch) {
         for (String path : batch) {
             log.info("SftpDataSyncService processPathList, path:{}", path);
-            List<PowerForecastData> list = sftpFileParser.parseFile(sftp, path);
+            List<PowerForecastData> list = sftpFileParser.parseFile(indicatorType, sftp, path);
             powerForecastDataService.saveList(list);
         }
     }

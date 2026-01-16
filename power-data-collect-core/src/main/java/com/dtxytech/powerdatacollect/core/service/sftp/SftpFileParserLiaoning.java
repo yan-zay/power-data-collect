@@ -41,12 +41,12 @@ public class SftpFileParserLiaoning extends SftpFileParser {
     private StationService stationService;
 
     @Override
-    public List<PowerForecastData> parseFile(ChannelSftp sftp, String path) {
+    public List<PowerForecastData> parseFile(IndicatorTypeEnum indicatorType, ChannelSftp sftp, String path) {
         // 从路径中提取文件名和目录信息
         String fileName = getFileName(path);
 
         try (InputStream in = sftp.get(path)) {
-            return parseForecastFileFromSftp(in, path, fileName);
+            return doParseFile(in, path, fileName);
         } catch (Exception e) {
             log.error("SftpFileParserNeimeng 解析文件失败: {}", path, e);
             return new ArrayList<>();
@@ -56,8 +56,7 @@ public class SftpFileParserLiaoning extends SftpFileParser {
     /**
      * 从远程 SFTP 读取并解析预测数据文件（适配两列格式）
      */
-    public List<PowerForecastData> parseForecastFileFromSftp(InputStream in,
-                                                             String filePath, String filename) {
+    public List<PowerForecastData> doParseFile(InputStream in, String filePath, String filename) {
         // === 2. 流式读取并解析 ===
         try {
             List<String> dataLines = new ArrayList<>();
@@ -73,12 +72,12 @@ public class SftpFileParserLiaoning extends SftpFileParser {
             }
             // 推断 stationId：从 fileName 提取前缀（如 DTDL4_... → DTDL4）
             String stationCode = getPathPart(filePath, 4);
-            log.info("parseForecastFileFromSftp dataLines:jsonStr:{}", JSON.toJSONString(dataLines));
-            log.info("parseForecastFileFromSftp stationCode:{}", stationCode);
+            log.info("doParseFile dataLines:jsonStr:{}", JSON.toJSONString(dataLines));
+            log.info("doParseFile stationCode:{}", stationCode);
 
             return getListDate(filePath, filename, stationCode, forecastTimeStr, dataLines);
         } catch (Exception e) {
-            log.error("❌ 读取或解析文件失败: {}", e.getMessage(), e);
+            log.error("读取或解析文件失败 SftpFileParserLiaoning e:{}", e.getMessage(), e);
             return null;
         }
     }
@@ -108,7 +107,7 @@ public class SftpFileParserLiaoning extends SftpFileParser {
         LocalDateTime collectTime = parseForecastTimeStr(forecastTimeStr);
         LocalDateTime forecastTime = parseForecastTimeStr(forecastTimeStr);
         String stationId = stationService.getStationIdByCode(stationCode);
-        log.info("parseForecastFileFromSftp getListDate stationCode:{}， stationId:{}", stationCode, stationId);
+        log.info("doParseFile getListDate stationCode:{}， stationId:{}", stationCode, stationId);
         for (int i = 0; i < dataLines.size(); i++) {
             String data = dataLines.get(i);
             BigDecimal value = null;

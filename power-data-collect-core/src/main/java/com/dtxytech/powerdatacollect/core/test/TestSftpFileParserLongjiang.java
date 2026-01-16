@@ -43,7 +43,7 @@ public class TestSftpFileParserLongjiang {
         System.out.println("=== 测试解析DQ文件 ===");
         try {
             // 使用顶级父类的parseFile方法
-            List<PowerForecastData> result = parser.parseFile(null, filePath);
+            List<PowerForecastData> result = parser.parseFile(null, null, filePath);
 
             if (result != null) {
                 System.out.println("解析DQ文件成功，共解析 " + result.size() + " 条数据");
@@ -81,7 +81,7 @@ public class TestSftpFileParserLongjiang {
         System.out.println("\n=== 测试解析CDQ文件 (0030_CDQ) ===");
         try {
             // 使用顶级父类的parseFile方法
-            List<PowerForecastData> result = parser.parseFile(null, filePath);
+            List<PowerForecastData> result = parser.parseFile(null, null, filePath);
 
             if (result != null) {
                 System.out.println("解析CDQ文件成功，共解析 " + result.size() + " 条数据");
@@ -114,7 +114,7 @@ public class TestSftpFileParserLongjiang {
         System.out.println("\n=== 测试解析CDQ文件 (0015_CDQ) ===");
         try {
             // 使用顶级父类的parseFile方法
-            List<PowerForecastData> result = parser.parseFile(null, filePath);
+            List<PowerForecastData> result = parser.parseFile(null, null, filePath);
 
             if (result != null) {
                 System.out.println("解析CDQ文件成功，共解析 " + result.size() + " 条数据");
