@@ -27,9 +27,6 @@ import java.util.Vector;
 @ConditionalOnProperty(name = "sftp.region", havingValue = "liaoning", matchIfMissing = false)
 public class SftpDownloaderLiaoning extends SftpDownloader {
 
-
-    private static final String SEPARATOR = "/";
-
     @Override
     public List<String> getAllFilePath(IndicatorTypeEnum indicatorType, ChannelSftp sftp, String remoteDir) {
         List<String> filePaths = new ArrayList<>();

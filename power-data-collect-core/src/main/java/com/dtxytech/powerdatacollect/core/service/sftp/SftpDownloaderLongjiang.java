@@ -44,7 +44,7 @@ public class SftpDownloaderLongjiang extends SftpDownloader {
                 // 检查是否是目录且不是需要跳过的目录
                 if (entry.getAttrs().isDir() && !isSkippedStation(fileName)) {
                     String stationCode = fileName; // 目录名作为场站编码
-                    String stationDir = remoteDir + "/" + stationCode;
+                    String stationDir = remoteDir + SEPARATOR + stationCode;
 
                     // 进入场站目录查找bak目录
                     intoStationDir(sftp, stationDir, indicatorType, filePaths);
@@ -97,7 +97,7 @@ public class SftpDownloaderLongjiang extends SftpDownloader {
 
                 // 假设目录名是日期格式（如 2025-10-23），检查是否是目录
                 if (entry.getAttrs().isDir() && checkDirDate(fileName)){
-                    String dateDir = bakDir + "/" + fileName;
+                    String dateDir = bakDir + SEPARATOR + fileName;
                     intoFileDir(sftp, dateDir, indicatorType, filePaths);
                 }
             }
@@ -143,7 +143,7 @@ public class SftpDownloaderLongjiang extends SftpDownloader {
 
                 // 检查是否是WPD文件且符合指标类型
                 if (fileName.toUpperCase().endsWith(".WPD") && isMatchingFileType(fileName, indicatorType)) {
-                    String filePath = dateDir + "/" + fileName;
+                    String filePath = dateDir + SEPARATOR + fileName;
                     log.info("SftpDownloaderLongjiang add path, filePath: {}", filePath);
                     filePaths.add(filePath);
                 }
