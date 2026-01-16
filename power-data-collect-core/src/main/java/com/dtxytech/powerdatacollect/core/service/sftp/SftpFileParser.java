@@ -54,4 +54,19 @@ public abstract class SftpFileParser {
             throw new IllegalArgumentException("parseForecastTimeStr 无法解析时间字符串: " + normalizedTimeStr);
         }
     }
+
+    /**
+     * 根据文件扩展名确定energyType
+     */
+    protected String getEnergyTypeFromFile(String filename) {
+        if (filename != null) {
+            filename = filename.toUpperCase();
+            if (filename.endsWith(".WPD")) {
+                return "wind";
+            } else if (filename.endsWith(".PPD")) {
+                return "pv";
+            }
+        }
+        return "unknown";
+    }
 }

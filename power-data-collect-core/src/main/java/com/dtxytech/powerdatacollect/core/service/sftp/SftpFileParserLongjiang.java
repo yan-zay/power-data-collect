@@ -47,21 +47,6 @@ public class SftpFileParserLongjiang extends SftpFileParser {
     }
 
     /**
-     * 从文件名确定指标类型
-     */
-    private IndicatorTypeEnum determineIndicatorTypeFromFileName(String fileName) {
-        if (fileName != null) {
-            fileName = fileName.toUpperCase();
-            if (fileName.contains(IndicatorTypeEnum.DQ.getName()) && !fileName.contains(IndicatorTypeEnum.CDQ.getName())) {
-                return IndicatorTypeEnum.DQ;
-            } else if (fileName.contains(IndicatorTypeEnum.CDQ.getName())) {
-                return IndicatorTypeEnum.CDQ;
-            }
-        }
-        return null;
-    }
-
-    /**
      * 从远程 SFTP 读取并解析预测数据文件（黑龙江地区特殊格式）
      * 解析包含 DQ 和 CDQ 后缀的文件
      */
@@ -215,21 +200,6 @@ public class SftpFileParserLongjiang extends SftpFileParser {
         }
         
         return result;
-    }
-
-    /**
-     * 根据文件扩展名确定energyType
-     */
-    private String getEnergyTypeFromFile(String filename) {
-        if (filename != null) {
-            filename = filename.toLowerCase();
-            if (filename.endsWith(".wpd")) {
-                return "wind";
-            } else if (filename.endsWith(".ppd")) {
-                return "pv";
-            }
-        }
-        return "unknown";
     }
 
     /**

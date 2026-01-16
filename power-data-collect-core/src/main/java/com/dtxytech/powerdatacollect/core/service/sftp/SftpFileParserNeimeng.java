@@ -47,18 +47,6 @@ public class SftpFileParserNeimeng extends SftpFileParser {
         }
     }
 
-    /**
-     * 从文件名确定指标类型
-     */
-    private IndicatorTypeEnum determineIndicatorTypeFromFileName(String fileName) {
-        for (IndicatorTypeEnum type : IndicatorTypeEnum.values()) {
-            if (type.checkFileName(fileName)) {
-                return type;
-            }
-        }
-        return null;
-    }
-
     public List<PowerForecastData> doParseFile(IndicatorTypeEnum indicatorType, InputStream in,
                                                              String filePath, String filename) {
         // === 2. 流式读取并解析 ===
@@ -143,7 +131,7 @@ public class SftpFileParserNeimeng extends SftpFileParser {
                     .forecastTime(forecastTime)
                     .stationCode(stationCode)
                     .indexCode(indicatorType.getValue())
-                    .energyType("energyType")//?
+                    .energyType(getEnergyTypeFromFile(filename))
 
                     .assetCode(stationId)
                     .forecastValue(value)

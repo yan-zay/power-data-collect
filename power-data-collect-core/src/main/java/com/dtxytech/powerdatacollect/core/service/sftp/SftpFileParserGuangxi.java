@@ -47,16 +47,6 @@ public class SftpFileParserGuangxi extends SftpFileParser {
         }
     }
 
-    private IndicatorTypeEnum determineIndicatorTypeFromFileName(String fileName) {
-        String upperFileName = fileName.toUpperCase();
-        if (upperFileName.contains("CDQYC")) {
-            return IndicatorTypeEnum.CDQ;
-        } else if (upperFileName.contains("DQYC")) {
-            return IndicatorTypeEnum.DQ;
-        }
-        return null;
-    }
-
     /**
      * 从远程 SFTP 读取并解析预测数据文件（广西地区特殊格式）
      * 解析包含 CDQYC 和 DQYC 后缀的文件
@@ -283,7 +273,8 @@ public class SftpFileParserGuangxi extends SftpFileParser {
     /**
      * 根据文件名前缀确定energyType
      */
-    private String getEnergyTypeFromFile(String filename) {
+    @Override
+    protected String getEnergyTypeFromFile(String filename) {
         if (filename != null) {
             filename = filename.toUpperCase();
             if (filename.startsWith("FD_")) {
