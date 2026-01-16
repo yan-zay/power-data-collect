@@ -47,8 +47,7 @@ public class SftpDownloaderLiaoning extends SftpDownloader {
 
         for (ChannelSftp.LsEntry entry : entries) {
             String dirName = entry.getFilename();
-            // 跳过 "." 和 ".."
-            if (".".equals(dirName) || "..".equals(dirName)) {
+            if (isSkippedFolder(dirName)) {
                 continue;
             }
 

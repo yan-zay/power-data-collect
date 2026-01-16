@@ -48,7 +48,7 @@ public class SftpDownloaderNeimeng extends SftpDownloader {
 
         for (ChannelSftp.LsEntry entry : entries) {
             String dirName = entry.getFilename();
-            if (".".equals(dirName) || "..".equals(dirName)) {
+            if (isSkippedFolder(dirName)) {
                 continue;
             }
 

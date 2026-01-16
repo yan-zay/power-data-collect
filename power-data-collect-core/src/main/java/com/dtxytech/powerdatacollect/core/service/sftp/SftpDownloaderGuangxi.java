@@ -22,9 +22,6 @@ import java.util.Vector;
 @ConditionalOnProperty(name = "sftp.region", havingValue = "guangxi", matchIfMissing = false)
 public class SftpDownloaderGuangxi extends SftpDownloader {
 
-    // 需要跳过的文件夹名称
-    private static final String[] SKIPPED_FOLDERS = {"..", "."};
-
     @Override
     public List<String> getAllFilePath(IndicatorTypeEnum indicatorType, ChannelSftp sftp, String remoteDir) {
         List<String> filePaths = new ArrayList<>();
@@ -35,7 +32,6 @@ public class SftpDownloaderGuangxi extends SftpDownloader {
 
             for (ChannelSftp.LsEntry entry : entries) {
                 String fileName = entry.getFilename();
-
                 if (isSkippedFolder(fileName)) {
                     continue;
                 }
@@ -83,7 +79,7 @@ public class SftpDownloaderGuangxi extends SftpDownloader {
                     }
                     
                     // 检查文件名是否包含CDQYC或DQYC标识，并且符合指标类型
-                    if (!entry.getAttrs().isDir() && isPowerForecastFile(fileName) && isMatchingFileType(fileName, indicatorType)) {
+                    if (!entry.getAttrs().isDir() && isMatchingFileType(fileName, indicatorType)) {
                         String filePath = dateDir + SEPARATOR + fileName;
                         filePaths.add(filePath);
                     }
@@ -95,38 +91,23 @@ public class SftpDownloaderGuangxi extends SftpDownloader {
     }
     
     /**
-     * 判断是否是需要跳过的文件夹
-     */
-    private boolean isSkippedFolder(String fileName) {
-        for (String skipped : SKIPPED_FOLDERS) {
-            if (skipped.equals(fileName)) {
-                return true;
-            }
-        }
-        return false;
-    }
-    
-    /**
      * 判断文件夹名是否是日期格式（yyyyMMdd）
      */
     private boolean isDateFormat(String fileName) {
         // 检查是否符合yyyyMMdd格式
         return fileName.matches("\\d{4}\\d{2}\\d{2}");
     }
-    
-    /**
-     * 判断是否是功率预测文件（包含CDQYC或DQYC）
-     */
-    private boolean isPowerForecastFile(String fileName) {
-        String upperFileName = fileName.toUpperCase();
-        return upperFileName.contains("CDQYC") || upperFileName.contains("DQYC");
-    }
-    
+
     /**
      * 判断文件是否符合指定的指标类型
      */
     private boolean isMatchingFileType(String fileName, IndicatorTypeEnum indicatorType) {
         String upperFileName = fileName.toUpperCase();
+        //判断是否是功率预测文件（包含CDQYC或DQYC）
+        if (!upperFileName.contains("CDQYC") && !upperFileName.contains("DQYC")) {
+            return false;
+        }
+
         if (indicatorType == IndicatorTypeEnum.DQ) {
             return upperFileName.contains("DQYC") && !upperFileName.contains("CDQYC");
         } else if (indicatorType == IndicatorTypeEnum.CDQ) {

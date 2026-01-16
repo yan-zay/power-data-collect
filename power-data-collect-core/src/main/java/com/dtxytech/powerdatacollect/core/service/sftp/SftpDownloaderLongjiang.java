@@ -36,11 +36,10 @@ public class SftpDownloaderLongjiang extends SftpDownloader {
             log.info("SftpDataSyncService syncFileList indicatorType:{}, remoteDir:{}, entries:{}", indicatorType, remoteDir, entries);
             for (ChannelSftp.LsEntry entry : entries) {
                 String fileName = entry.getFilename();
-
-                // 跳过当前目录和父目录
-                if (".".equals(fileName) || "..".equals(fileName)) {
+                if (isSkippedFolder(fileName)) {
                     continue;
                 }
+
                 // 检查是否是目录且不是需要跳过的目录
                 if (entry.getAttrs().isDir() && !isSkippedStation(fileName)) {
                     String stationCode = fileName; // 目录名作为场站编码
@@ -64,9 +63,7 @@ public class SftpDownloaderLongjiang extends SftpDownloader {
             Vector<ChannelSftp.LsEntry> entries = sftp.ls(stationDir);
             for (ChannelSftp.LsEntry entry : entries) {
                 String fileName = entry.getFilename();
-
-                // 跳过当前目录和父目录
-                if (".".equals(fileName) || "..".equals(fileName)) {
+                if (isSkippedFolder(fileName)) {
                     continue;
                 }
 
@@ -89,9 +86,7 @@ public class SftpDownloaderLongjiang extends SftpDownloader {
             Vector<ChannelSftp.LsEntry> entries = sftp.ls(bakDir);
             for (ChannelSftp.LsEntry entry : entries) {
                 String fileName = entry.getFilename();
-
-                // 跳过当前目录和父目录
-                if (".".equals(fileName) || "..".equals(fileName)) {
+                if (isSkippedFolder(fileName)) {
                     continue;
                 }
 
@@ -135,9 +130,7 @@ public class SftpDownloaderLongjiang extends SftpDownloader {
             Vector<ChannelSftp.LsEntry> entries = sftp.ls(dateDir);
             for (ChannelSftp.LsEntry entry : entries) {
                 String fileName = entry.getFilename();
-
-                // 跳过当前目录和父目录
-                if (".".equals(fileName) || "..".equals(fileName)) {
+                if (isSkippedFolder(fileName)) {
                     continue;
                 }
 
