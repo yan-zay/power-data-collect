@@ -98,8 +98,10 @@ public class SftpFileParserLiaoning extends SftpFileParser {
             indexCode=IndicatorTypeEnum.CDQ.getValue();
         }else {
             if(dataLines.size()==16){
+                forecastTimeStr=split[1]+split[split.length-1].replace(".xml","");
                 indexCode=IndicatorTypeEnum.CDQ.getValue();
             }else if(dataLines.size()==96){
+                forecastTimeStr=split[1];
                 indexCode=IndicatorTypeEnum.DQ.getValue();
             }else {
                 log.error("未获取到指标类型", lastPart);
