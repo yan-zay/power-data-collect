@@ -55,9 +55,10 @@ public class SftpDownloaderNeimeng extends SftpDownloader {
 
             String fullPath = path + SEPARATOR + dirName;
             if (entry.getAttrs().isDir()) {
-                if (getPathLv(fullPath) >= 4 && checkDir(dirName)) {
+                if (getPathLv(fullPath) > 4 && checkDir(dirName)) {
                     continue;
                 }
+
                 // 递归进入子目录
                 recurseCollectFilePaths(sftp, fullPath, indicatorType, filePaths);
             } else {
