@@ -26,10 +26,11 @@ public class SyncFetchFileTask {
     // 每10分钟拉一次短期数据
     @Scheduled(cron = "0 0 0/1 * * ? ")
     public void syncShortTermFile() {
-        log.info("Starting syncShortTermFile SFTP sync");
+        log.info("Starting syncShortTermFile start");
         if (!INITIALIZED) {
             return;
         }
+        log.info("Starting syncShortTermFile do");
         sftpDataSyncService.syncFileList(IndicatorTypeEnum.DQ);
         log.info("syncShortTermFile completed");
     }
@@ -37,10 +38,11 @@ public class SyncFetchFileTask {
     // 每2分钟拉一次超短期数据
     @Scheduled(cron = "0 0/5 * * * ? ")
     public void syncVeryShortTermFile() {
-        log.info("Starting syncVeryShortTermFile SFTP sync");
+        log.info("Starting syncVeryShortTermFile start");
         if (!INITIALIZED) {
             return;
         }
+        log.info("Starting syncVeryShortTermFile do");
         sftpDataSyncService.syncFileList(IndicatorTypeEnum.CDQ);
         log.info("syncVeryShortTermFile sync completed");
     }
@@ -48,7 +50,7 @@ public class SyncFetchFileTask {
     @PostConstruct
     public void init() {
         log.info("SyncFetchFileTask init");
-        CompletableFuture.runAsync(() -> sftpDataSyncService.syncFileList(IndicatorTypeEnum.DQ));
+        sftpDataSyncService.syncFileList(IndicatorTypeEnum.DQ);
         sftpDataSyncService.syncFileList(IndicatorTypeEnum.CDQ);
         INITIALIZED = true;
         log.info("SyncFetchFileTask init completed");
