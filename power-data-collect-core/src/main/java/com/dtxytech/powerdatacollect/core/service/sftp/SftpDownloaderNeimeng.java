@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
 
@@ -61,11 +62,22 @@ public class SftpDownloaderNeimeng extends SftpDownloader {
                 recurseCollectFilePaths(sftp, fullPath, indicatorType, filePaths);
             } else {
                 // 是文件，检查是否符合指标类型并添加到路径列表
-                if (indicatorType.checkFileName(dirName)) {
+                if (indicatorType.checkFileName(dirName) || checkFullPathDepth(fullPath)) {
                     filePaths.add(fullPath);
                 }
             }
         }
+    }
+
+    private boolean checkFullPathDepth(String fullPath) {
+        if (fullPath == null || fullPath.isEmpty()) {
+            return false;
+        }
+        // 统一处理路径分隔符，将Windows和Unix风格的分隔符都转换为"/"
+        String normalizedPath = fullPath.replace("\\", "/");
+        // 分割路径
+        String[] parts = normalizedPath.split("/");
+        return parts.length - 1 >= 5 ;
     }
 
     /**
