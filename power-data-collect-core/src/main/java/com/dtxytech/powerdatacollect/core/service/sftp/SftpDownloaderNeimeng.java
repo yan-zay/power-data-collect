@@ -55,7 +55,7 @@ public class SftpDownloaderNeimeng extends SftpDownloader {
 
             String fullPath = path + SEPARATOR + dirName;
             if (entry.getAttrs().isDir()) {
-                if (checkDir(dirName)) {
+                if (getPathLv(fullPath) >= 4 && checkDir(dirName)) {
                     continue;
                 }
                 // 递归进入子目录
@@ -70,15 +70,16 @@ public class SftpDownloaderNeimeng extends SftpDownloader {
     }
 
     private boolean checkFullPathDepth(String fullPath) {
-        if (fullPath == null || fullPath.isEmpty()) {
-            return false;
-        }
-//        log.info("SftpDownloaderNeimeng checkFullPathDepth fullPath: {}", fullPath);
+        int pathLv = getPathLv(fullPath);
+        return pathLv >= 5 ;
+    }
+
+    private static int getPathLv(String fullPath) {
         // 统一处理路径分隔符，将Windows和Unix风格的分隔符都转换为"/"
         String normalizedPath = fullPath.replace("\\", "/");
         // 分割路径
         String[] parts = normalizedPath.split("/");
-        return parts.length - 1 >= 5 ;
+        return parts.length- 1;
     }
 
     /**
