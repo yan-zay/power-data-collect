@@ -57,6 +57,19 @@ public class PowerForecastDataServiceImpl extends ServiceImpl<PowerForecastDataM
         }
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public boolean checkDuplicate(PowerForecastData powerForecastData) {
+        LambdaQueryWrapper<PowerForecastData> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(PowerForecastData::getCollectTime, powerForecastData.getCollectTime())
+                .eq(PowerForecastData::getForecastTime, powerForecastData.getForecastTime())
+                .eq(PowerForecastData::getStationCode, powerForecastData.getStationCode())
+                .eq(PowerForecastData::getIndexCode, powerForecastData.getIndexCode())
+                .eq(PowerForecastData::getEnergyType, powerForecastData.getEnergyType());
+        Long count = powerForecastDataMapper.selectCount(wrapper);
+        return count >= 1;
+    }
+
     private boolean checkRegionGuangxi() {
         return "guangxi".equals(sftpProperties.getRegion());
     }
@@ -92,16 +105,5 @@ public class PowerForecastDataServiceImpl extends ServiceImpl<PowerForecastDataM
         } catch (InstantiationException | IllegalAccessException e) {
             throw new RuntimeException("Failed to copy object", e);
         }
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public boolean checkDuplicate(PowerForecastData powerForecastData) {
-        LambdaQueryWrapper<PowerForecastData> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(PowerForecastData::getStationCode, powerForecastData.getStationCode())
-                .eq(PowerForecastData::getIndexCode, powerForecastData.getIndexCode())
-                .eq(PowerForecastData::getCollectTime, powerForecastData.getCollectTime());
-        Long count = powerForecastDataMapper.selectCount(wrapper);
-        return count >= 1;
     }
 }

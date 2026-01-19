@@ -10,9 +10,5 @@ import org.apache.ibatis.annotations.Mapper;
  */
 @Mapper
 public interface PowerForecastDataMapper extends BaseMapper<PowerForecastData> {
-    // 继承 BaseMapper 即可，无需额外方法
 
-/*    PowerForecastData data = mapper.selectById(new PowerForecastData()
-            .setIndicatorType("DTCG_001")
-            .setForecastTime(LocalDateTime.of(2025, 12, 14, 0, 15)));*/
 }
