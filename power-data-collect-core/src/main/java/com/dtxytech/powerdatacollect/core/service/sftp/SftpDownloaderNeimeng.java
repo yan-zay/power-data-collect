@@ -62,7 +62,7 @@ public class SftpDownloaderNeimeng extends SftpDownloader {
                 recurseCollectFilePaths(sftp, fullPath, indicatorType, filePaths);
             } else {
                 // 是文件，检查是否符合指标类型并添加到路径列表
-                if (indicatorType.checkFileName(dirName) || checkFullPathDepth(fullPath)) {
+                if (indicatorType.checkFileName(dirName) && checkFullPathDepth(fullPath)) {
                     filePaths.add(fullPath);
                 }
             }
