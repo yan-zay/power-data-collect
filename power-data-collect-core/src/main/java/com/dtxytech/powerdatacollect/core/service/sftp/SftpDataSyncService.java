@@ -7,6 +7,7 @@ import com.dtxytech.powerdatacollect.core.service.power.PowerForecastDataService
 import com.google.common.collect.Lists;
 import com.jcraft.jsch.ChannelSftp;
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +17,7 @@ import java.util.List;
  * @Author zay
  * @Date 2025/12/17 16:28
  */
+@Data
 @Slf4j
 @Service
 @AllArgsConstructor
@@ -25,8 +27,8 @@ public class SftpDataSyncService {
 
     private final SftpConnectionManager sftpConnectionManager;
     private final SftpProperties sftpProperties;
-    private final SftpDownloader sftpRecursiveDownloader;
-    private final SftpFileParser sftpFileParser;
+    public final SftpDownloader sftpDownloader;
+    public final SftpFileParser sftpFileParser;
     private final PowerForecastDataService powerForecastDataService;
 
     public void syncFileList(IndicatorTypeEnum indicatorType) {
@@ -34,8 +36,8 @@ public class SftpDataSyncService {
         ChannelSftp sftp = sftpConnectionManager.getCurrentSftp();
         log.info("SftpDataSyncService syncFileList sftp:{}", sftp);
         try {
-            List<String> pathList = sftpRecursiveDownloader.getAllFilePath(indicatorType, sftp, sftpProperties.getRemoteDir());
-            log.info("SftpDataSyncService syncFileList pathList.size:{}", pathList.size());
+            List<String> pathList = sftpDownloader.getAllFilePath(indicatorType, sftp, sftpProperties.getRemoteDir());
+            log.info("SftpDataSyncService syncFileList, indicatorType:{}, pathList.size:{}", indicatorType, pathList.size());
             List<List<String>> batchList = Lists.partition(pathList, BATCH_SIZE);
             for (List<String> batch : batchList) {
                 processPathList(indicatorType, sftp, batch);

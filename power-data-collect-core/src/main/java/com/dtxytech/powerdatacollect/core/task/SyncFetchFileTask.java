@@ -2,14 +2,12 @@ package com.dtxytech.powerdatacollect.core.task;
 
 import com.dtxytech.powerdatacollect.core.enums.IndicatorTypeEnum;
 import com.dtxytech.powerdatacollect.core.service.sftp.SftpDataSyncService;
-import com.dtxytech.powerdatacollect.core.service.sftp.SftpDownloader;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * @Author zay
@@ -50,6 +48,10 @@ public class SyncFetchFileTask {
     @PostConstruct
     public void init() {
         log.info("SyncFetchFileTask init");
+        // 打印当前使用的 SftpDownloader 和 SftpFileParser 实现类
+        log.info("SyncFetchFileTask SftpDownloader implementation: {}", sftpDataSyncService.getSftpDownloader().getClass().getName());
+        log.info("SyncFetchFileTask SftpFileParser implementation: {}", sftpDataSyncService.getSftpFileParser().getClass().getName());
+
         sftpDataSyncService.syncFileList(IndicatorTypeEnum.DQ);
         sftpDataSyncService.syncFileList(IndicatorTypeEnum.CDQ);
         INITIALIZED = true;

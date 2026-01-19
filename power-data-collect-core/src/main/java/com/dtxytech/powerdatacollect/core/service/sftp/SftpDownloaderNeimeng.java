@@ -73,6 +73,7 @@ public class SftpDownloaderNeimeng extends SftpDownloader {
         if (fullPath == null || fullPath.isEmpty()) {
             return false;
         }
+//        log.info("SftpDownloaderNeimeng checkFullPathDepth fullPath: {}", fullPath);
         // 统一处理路径分隔符，将Windows和Unix风格的分隔符都转换为"/"
         String normalizedPath = fullPath.replace("\\", "/");
         // 分割路径
@@ -85,6 +86,10 @@ public class SftpDownloaderNeimeng extends SftpDownloader {
      * 目录日期是否小于起始日期
      */
     protected boolean checkDir(String dirName) {
+        // 首先检查目录名是否为纯数字
+        if (!isNumeric(dirName)) {
+            return true; // 不是纯数字，跳过此目录
+        }
         // 获取配置的起始日期
         String fileStartDate = sftpProperties.getFileStartDate();
 
@@ -103,6 +108,18 @@ public class SftpDownloaderNeimeng extends SftpDownloader {
         }
 
         return false; // 返回false表示处理此目录
+    }
+
+    private static boolean isNumeric(String str) {
+        if (str == null || str.isEmpty()) {
+            return false;
+        }
+        for (char c : str.toCharArray()) {
+            if (!Character.isDigit(c)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
