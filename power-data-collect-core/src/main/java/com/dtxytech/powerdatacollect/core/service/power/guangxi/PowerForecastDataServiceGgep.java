@@ -21,7 +21,7 @@ public class PowerForecastDataServiceGgep extends ServiceImpl<PowerForecastDataM
 
     @Transactional
     public void saveList(List<PowerForecastDataGgep> list) {
-if (list == null || list.isEmpty()) {
+        if (list == null || list.isEmpty()) {
             return;
         }
         boolean exist = this.checkDuplicate(list.get(0));
