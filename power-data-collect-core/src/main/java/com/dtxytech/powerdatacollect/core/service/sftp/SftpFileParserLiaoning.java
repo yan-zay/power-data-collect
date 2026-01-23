@@ -94,10 +94,10 @@ public class SftpFileParserLiaoning extends SftpFileParser {
             forecastTimeStr=split[1]+split[split.length-1].replace(".xml","");
             indexCode=IndicatorTypeEnum.CDQ.getValue();
         }else {
-            if(dataLines.size()==16){
+            if(getFileType(filename).equals(IndicatorTypeEnum.CDQ.getValue())){
                 forecastTimeStr=split[1]+split[split.length-1].replace(".xml","");
                 indexCode=IndicatorTypeEnum.CDQ.getValue();
-            }else if(dataLines.size()==96){
+            }else if(getFileType(filename).equals(IndicatorTypeEnum.DQ.getValue())){
                 forecastTimeStr=split[1];
                 indexCode=IndicatorTypeEnum.DQ.getValue();
             }else {
@@ -180,6 +180,52 @@ public class SftpFileParserLiaoning extends SftpFileParser {
         } catch (Exception e) {
             log.error("无法解析时间字符串: {}", normalizedTimeStr, e);
             throw new IllegalArgumentException("parseForecastTimeStr 无法解析时间字符串: " + normalizedTimeStr);
+        }
+    }
+
+    public static String getFileType(String fileName) {
+        // 移除文件扩展名
+        String nameWithoutExt = fileName.replace(".xml", "");
+
+        // 检查是否包含时间戳后缀（如_2320）
+        if (nameWithoutExt.matches(".*_\\d{4}$")) { // 匹配下划线+4位数字结尾
+            return IndicatorTypeEnum.CDQ.getValue();
+        } else if (nameWithoutExt.matches(".*_\\d{8}$")) { // 匹配下划线+8位日期结尾
+            return IndicatorTypeEnum.DQ.getValue();
+        }
+
+        // 如果不匹配上述模式，尝试更精确的解析
+        try {
+            // 提取日期部分
+            String[] parts = nameWithoutExt.split("_");
+            if (parts.length >= 2) {
+                String datePart = parts[parts.length - 1];
+
+                // 检查是否为yyyyMMdd格式（8位日期）
+                if (datePart.length() == 8 && isDateValid(datePart)) {
+                    // 检查是否有时间部分
+                    String fullDateString = nameWithoutExt.substring(nameWithoutExt.lastIndexOf("_") + 1);
+                    if (fullDateString.length() > 8) {
+                        return IndicatorTypeEnum.CDQ.getValue(); // 包含时间信息
+                    } else {
+                        return IndicatorTypeEnum.DQ.getValue(); // 只有日期信息
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // 解析失败时的默认处理
+        }
+
+        return "未知类型";
+    }
+
+    private static boolean isDateValid(String dateStr) {
+        try {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+            LocalDateTime.parse(dateStr, formatter);
+            return true;
+        } catch (Exception e) {
+            return false;
         }
     }
 
