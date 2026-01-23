@@ -20,7 +20,6 @@ import java.util.List;
 public abstract class SftpDownloader {
 
     protected static final String SEPARATOR = "/";
-    // 需要跳过的文件夹名称
     protected static final String[] SKIPPED_FOLDERS = {"..", "."};
 
     @Autowired
@@ -32,9 +31,6 @@ public abstract class SftpDownloader {
 
     protected abstract List<String> getAllFilePath(IndicatorTypeEnum indicatorType, ChannelSftp sftp, String remoteDir);
 
-    /**
-     * 判断是否是需要跳过的文件夹
-     */
     protected boolean isSkippedFolder(String fileName) {
         for (String skipped : SKIPPED_FOLDERS) {
             if (skipped.equals(fileName)) {

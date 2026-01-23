@@ -55,9 +55,6 @@ public abstract class SftpFileParser {
         }
     }
 
-    /**
-     * 根据文件扩展名确定energyType
-     */
     protected String getEnergyTypeFromFile(String filename) {
         if (filename != null) {
             filename = filename.toUpperCase();

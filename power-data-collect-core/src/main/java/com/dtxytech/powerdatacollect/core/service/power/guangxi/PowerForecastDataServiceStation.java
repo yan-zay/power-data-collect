@@ -20,7 +20,7 @@ public class PowerForecastDataServiceStation extends ServiceImpl<PowerForecastDa
 
     @Transactional
     public void saveList(List<PowerForecastDataStation> list) {
-if (list == null || list.isEmpty()) {
+        if (list == null || list.isEmpty()) {
             return;
         }
         boolean exist = this.checkDuplicate(list.get(0));

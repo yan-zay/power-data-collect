@@ -79,11 +79,11 @@ public class PowerForecastDataServiceImpl extends ServiceImpl<PowerForecastDataM
     public void saveListByType(List<PowerForecastData> list) {
         String filePath = list.get(0).getFilePath();
         if (filePath.startsWith("//cdt")) {
-            cdt.saveBatch(copyList(list, PowerForecastDataCdt.class));
+            cdt.saveList(copyList(list, PowerForecastDataCdt.class));
         }else if (filePath.startsWith("//ggep")) {
-            ggep.saveBatch(copyList(list, PowerForecastDataGgep.class));
+            ggep.saveList(copyList(list, PowerForecastDataGgep.class));
         }else if (filePath.startsWith("//station")) {
-            station.saveBatch(copyList(list, PowerForecastDataStation.class));
+            station.saveList(copyList(list, PowerForecastDataStation.class));
         }
     }
 

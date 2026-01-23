@@ -3,7 +3,6 @@ package com.dtxytech.powerdatacollect.core.service.power.guangxi;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.dtxytech.powerdatacollect.core.entity.guangxi.PowerForecastDataGgep;
-import com.dtxytech.powerdatacollect.core.entity.guangxi.PowerForecastDataGgep;
 import com.dtxytech.powerdatacollect.core.mapper.guangxi.PowerForecastDataMapperGgep;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,7 +20,7 @@ public class PowerForecastDataServiceGgep extends ServiceImpl<PowerForecastDataM
 
     @Transactional
     public void saveList(List<PowerForecastDataGgep> list) {
-if (list == null || list.isEmpty()) {
+        if (list == null || list.isEmpty()) {
             return;
         }
         boolean exist = this.checkDuplicate(list.get(0));

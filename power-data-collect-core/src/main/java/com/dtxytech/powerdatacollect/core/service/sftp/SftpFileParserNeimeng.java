@@ -101,7 +101,7 @@ public class SftpFileParserNeimeng extends SftpFileParser {
             }
             // 推断 stationId：从 fileName 提取前缀（如 DTDL4_... → DTDL4）
             String stationCode = getPathPart(filePath, 4);
-            log.info("doParseFile stationCode:{}", stationCode);
+//            log.info("doParseFile stationCode:{}", stationCode);
 
             return getListDate(indicatorType, filePath, filename, stationCode, forecastTimeStr, dataLines);
         } catch (Exception e) {
@@ -116,7 +116,7 @@ public class SftpFileParserNeimeng extends SftpFileParser {
         LocalDateTime collectTime = parseForecastTimeStr(forecastTimeStr);
         LocalDateTime forecastTime = parseForecastTimeStr(forecastTimeStr);
         String stationId = stationService.getStationIdByCode(stationCode);
-        log.info("doParseFile getListDate stationCode:{}， stationId:{}", stationCode, stationId);
+//        log.info("doParseFile getListDate stationCode:{}， stationId:{}", stationCode, stationId);
         for (int i = 0; i < dataLines.size(); i++) {
             String data = dataLines.get(i);
             BigDecimal value = null;
