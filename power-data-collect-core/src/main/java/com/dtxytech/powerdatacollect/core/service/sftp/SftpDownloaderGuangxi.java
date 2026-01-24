@@ -49,7 +49,7 @@ public class SftpDownloaderGuangxi extends SftpDownloader {
         Vector<ChannelSftp.LsEntry> entries = sftp.ls(dir);
         for (ChannelSftp.LsEntry entry : entries) {
             String fileName = entry.getFilename();
-            if (isSkippedFolder(fileName)) {
+            if (isSkippedFolder(fileName) || checkFileDate(fileName)) {
                 continue;
             }
             // 检查是否是日期格式的目录（yyyyMMdd）
