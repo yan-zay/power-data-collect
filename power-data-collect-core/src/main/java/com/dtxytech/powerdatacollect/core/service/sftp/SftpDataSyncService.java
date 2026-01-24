@@ -40,14 +40,15 @@ public class SftpDataSyncService {
             log.info("SftpDataSyncService syncFileList, indicatorType:{}, pathList.size:{}", indicatorType, pathList.size());
             List<List<String>> batchList = Lists.partition(pathList, BATCH_SIZE);
             for (List<String> batch : batchList) {
-                processPathList(indicatorType, sftp, batch);
+                processPathList(indicatorType, batch);
             }
         } catch (Exception e) {
             log.error("SftpDataSyncService syncFileList , indicatorType: {}, sftp: {}, remoteDir: {}", indicatorType, sftp, sftpProperties.getRemoteDir(), e);
         }
     }
 
-    private void processPathList(IndicatorTypeEnum indicatorType, ChannelSftp sftp, List<String> batch) {
+    private void processPathList(IndicatorTypeEnum indicatorType, List<String> batch) {
+        ChannelSftp sftp = sftpConnectionManager.getCurrentSftp();
         for (String path : batch) {
             log.info("SftpDataSyncService processPathList， indicatorType：{}, path:{}", indicatorType, path);
             if (powerForecastDataService.checkFileExists(indicatorType, path)) {
