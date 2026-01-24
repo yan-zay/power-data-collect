@@ -49,7 +49,11 @@ public class SftpDataSyncService {
 
     private void processPathList(IndicatorTypeEnum indicatorType, ChannelSftp sftp, List<String> batch) {
         for (String path : batch) {
-            log.info("SftpDataSyncService processPathList, path:{}", path);
+            log.info("SftpDataSyncService processPathList， indicatorType：{}, path:{}", indicatorType, path);
+            if (powerForecastDataService.checkFileExists(indicatorType, path)) {
+                log.info("SftpDataSyncService processPathList file exists， indicatorType：{}, path:{}", indicatorType, path);
+                continue;
+            }
             List<PowerForecastData> list = sftpFileParser.parseFile(indicatorType, sftp, path);
             powerForecastDataService.saveList(list);
         }

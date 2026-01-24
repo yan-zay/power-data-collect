@@ -7,6 +7,7 @@ import com.dtxytech.powerdatacollect.core.entity.PowerForecastData;
 import com.dtxytech.powerdatacollect.core.entity.guangxi.PowerForecastDataCdt;
 import com.dtxytech.powerdatacollect.core.entity.guangxi.PowerForecastDataGgep;
 import com.dtxytech.powerdatacollect.core.entity.guangxi.PowerForecastDataStation;
+import com.dtxytech.powerdatacollect.core.enums.IndicatorTypeEnum;
 import com.dtxytech.powerdatacollect.core.mapper.PowerForecastDataMapper;
 import com.dtxytech.powerdatacollect.core.service.power.guangxi.PowerForecastDataServiceCdt;
 import com.dtxytech.powerdatacollect.core.service.power.guangxi.PowerForecastDataServiceGgep;
@@ -35,6 +36,16 @@ public class PowerForecastDataServiceImpl extends ServiceImpl<PowerForecastDataM
     private PowerForecastDataServiceGgep ggep;
     private PowerForecastDataServiceStation station;
     private SftpProperties sftpProperties;
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean checkFileExists(IndicatorTypeEnum indicatorType, String path) {
+        LambdaQueryWrapper<PowerForecastData> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(PowerForecastData::getIndexCode, indicatorType.getValue())
+                .eq(PowerForecastData::getFilePath, path);
+        Long count = powerForecastDataMapper.selectCount(wrapper);
+        return count >= 1;
+    }
 
     @Override
     @Transactional
