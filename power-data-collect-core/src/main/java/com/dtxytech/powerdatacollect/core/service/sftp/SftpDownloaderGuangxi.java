@@ -47,6 +47,8 @@ public class SftpDownloaderGuangxi extends SftpDownloader {
 
     private void getTwoLvDir(IndicatorTypeEnum indicatorType, ChannelSftp sftp, String dir, List<String> filePaths) throws SftpException {
         Vector<ChannelSftp.LsEntry> entries = sftp.ls(dir);
+        if (entries == null) return;
+        entries.sort((o1, o2) -> o2.getFilename().compareTo(o1.getFilename()));
         for (ChannelSftp.LsEntry entry : entries) {
             String fileName = entry.getFilename();
             if (isSkippedFolder(fileName) || checkFileDate(fileName)) {

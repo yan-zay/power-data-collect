@@ -84,6 +84,8 @@ public class SftpDownloaderLongjiang extends SftpDownloader {
     private void intoStationDirBak(ChannelSftp sftp, String bakDir, IndicatorTypeEnum indicatorType, List<String> filePaths) {
         try {
             Vector<ChannelSftp.LsEntry> entries = sftp.ls(bakDir);
+            if (entries == null) return;
+            entries.sort((o1, o2) -> o2.getFilename().compareTo(o1.getFilename()));
             for (ChannelSftp.LsEntry entry : entries) {
                 String fileName = entry.getFilename();
                 if (isSkippedFolder(fileName)) {
