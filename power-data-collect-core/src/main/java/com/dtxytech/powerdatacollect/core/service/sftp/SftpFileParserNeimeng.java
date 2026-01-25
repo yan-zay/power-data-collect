@@ -101,9 +101,10 @@ public class SftpFileParserNeimeng extends SftpFileParser {
             }
             // 推断 stationId：从 fileName 提取前缀（如 DTDL4_... → DTDL4）
             String stationCode = getPathPart(filePath, 4);
-            log.info("doParseFile stationCode:{}", stationCode);
 
-            return getListDate(indicatorType, filePath, filename, stationCode, forecastTimeStr, dataLines);
+            List<PowerForecastData> result = getListDate(indicatorType, filePath, filename, stationCode, forecastTimeStr, dataLines);
+            log.info("doParseFile stationCode:{}, result size:{}", stationCode, result.size());
+            return result;
         } catch (Exception e) {
             log.error("SftpFileParserNeimeng doParseFile, filePath:{}, 读取或解析文件失败: {}", filePath, e.getMessage(), e);
             return null;
