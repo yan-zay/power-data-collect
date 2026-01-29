@@ -33,6 +33,8 @@ public class PowerForecastData {
     @TableField(value = "energy_type")
     private String energyType;
 
+    @TableField(value = "data_source")
+    private String dataSource;
     @TableField(value = "asset_code")
     private String assetCode;
     @TableField(value = "forecast_value")

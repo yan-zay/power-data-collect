@@ -269,10 +269,6 @@ public class SftpFileParserGuangxi extends SftpFileParser {
         }
         return null;
     }
-
-    /**
-     * 根据文件名前缀确定energyType
-     */
     @Override
     protected String getEnergyTypeFromFile(String filename) {
         if (filename != null) {
@@ -285,11 +281,7 @@ public class SftpFileParserGuangxi extends SftpFileParser {
         }
         return "unknown";
     }
-
-    /**
-     * 构建PowerForecastData对象
-     */
-    private PowerForecastData buildPowerForecastData(IndicatorTypeEnum indicatorType, String filePath, 
+    private PowerForecastData buildPowerForecastData(IndicatorTypeEnum indicatorType, String filePath,
                                                      String filename, String stationCode, 
                                                      String forecastTimeStr, BigDecimal value, 
                                                      Integer orderNo, String energyType) {
@@ -298,10 +290,12 @@ public class SftpFileParserGuangxi extends SftpFileParser {
         
         return PowerForecastData.builder()
                 .collectTime(collectTime)
-                .forecastTime(collectTime) // 初始设置为相同时间，后续根据具体数据类型调整
+                .forecastTime(collectTime)
                 .stationCode(stationCode)
                 .indexCode(indicatorType.getValue())
                 .energyType(energyType)
+                .dataSource(getDataSource(filePath))
+
                 .assetCode(stationId)
                 .forecastValue(value)
                 .orderNo(orderNo)
@@ -309,6 +303,20 @@ public class SftpFileParserGuangxi extends SftpFileParser {
                 .fileName(filename)
                 .createTime(LocalDateTime.now())
                 .build();
+    }
+    private static String getDataSource(String filePath) {
+        if (filePath == null || filePath.isEmpty()) {
+            return null;
+        }
+        // 移除开头可能存在的双斜杠
+        String cleanPath = filePath.startsWith("//") ? filePath.substring(2) : filePath;
+        // 按照斜杠分割路径
+        String[] parts = cleanPath.split("/");
+        // 返回第一个部分作为数据源
+        if (parts.length > 0) {
+            return parts[0];
+        }
+        return null;
     }
 
     /**
