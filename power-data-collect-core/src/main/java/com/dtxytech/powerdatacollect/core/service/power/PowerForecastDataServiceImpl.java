@@ -2,25 +2,15 @@ package com.dtxytech.powerdatacollect.core.service.power;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.dtxytech.powerdatacollect.core.config.SftpProperties;
 import com.dtxytech.powerdatacollect.core.entity.PowerForecastData;
-import com.dtxytech.powerdatacollect.core.entity.guangxi.PowerForecastDataCdt;
-import com.dtxytech.powerdatacollect.core.entity.guangxi.PowerForecastDataGgep;
-import com.dtxytech.powerdatacollect.core.entity.guangxi.PowerForecastDataStation;
 import com.dtxytech.powerdatacollect.core.enums.IndicatorTypeEnum;
 import com.dtxytech.powerdatacollect.core.mapper.PowerForecastDataMapper;
-import com.dtxytech.powerdatacollect.core.service.power.guangxi.PowerForecastDataServiceCdt;
-import com.dtxytech.powerdatacollect.core.service.power.guangxi.PowerForecastDataServiceGgep;
-import com.dtxytech.powerdatacollect.core.service.power.guangxi.PowerForecastDataServiceStation;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @Author zay
@@ -32,10 +22,6 @@ import java.util.stream.Collectors;
 public class PowerForecastDataServiceImpl extends ServiceImpl<PowerForecastDataMapper, PowerForecastData> implements PowerForecastDataService {
 
     private PowerForecastDataMapper powerForecastDataMapper;
-    private PowerForecastDataServiceCdt cdt;
-    private PowerForecastDataServiceGgep ggep;
-    private PowerForecastDataServiceStation station;
-    private SftpProperties sftpProperties;
 
     @Override
     @Transactional(readOnly = true)
@@ -51,10 +37,6 @@ public class PowerForecastDataServiceImpl extends ServiceImpl<PowerForecastDataM
     @Transactional
     public void saveList(List<PowerForecastData> list) {
         if (list == null || list.isEmpty()) {
-            return;
-        }
-        if (checkRegionGuangxi()) {
-            saveListByType(list);
             return;
         }
         boolean exist = this.checkDuplicate(list.get(0));
@@ -79,42 +61,5 @@ public class PowerForecastDataServiceImpl extends ServiceImpl<PowerForecastDataM
                 .eq(PowerForecastData::getEnergyType, powerForecastData.getEnergyType());
         Long count = powerForecastDataMapper.selectCount(wrapper);
         return count >= 1;
-    }
-
-    private boolean checkRegionGuangxi() {
-        return "guangxi".equals(sftpProperties.getRegion());
-    }
-
-    @Override
-    @Transactional
-    public void saveListByType(List<PowerForecastData> list) {
-        String filePath = list.get(0).getFilePath();
-        if (filePath.startsWith("//cdt")) {
-            cdt.saveBatch(copyList(list, PowerForecastDataCdt.class));
-        }else if (filePath.startsWith("//ggep")) {
-            ggep.saveBatch(copyList(list, PowerForecastDataGgep.class));
-        }else if (filePath.startsWith("//station")) {
-            station.saveBatch(copyList(list, PowerForecastDataStation.class));
-        }
-    }
-
-    public static <T> List<T> copyList(List<?> sourceList, Class<T> targetClass) {
-        if (sourceList == null || sourceList.isEmpty()) {
-            return new ArrayList<>();
-        }
-
-        return sourceList.stream()
-                .map(item -> copyObject(item, targetClass))
-                .collect(Collectors.toList());
-    }
-
-    private static <T> T copyObject(Object source, Class<T> targetClass) {
-        try {
-            T target = targetClass.newInstance();
-            BeanUtils.copyProperties(source, target);
-            return target;
-        } catch (InstantiationException | IllegalAccessException e) {
-            throw new RuntimeException("Failed to copy object", e);
-        }
     }
 }
