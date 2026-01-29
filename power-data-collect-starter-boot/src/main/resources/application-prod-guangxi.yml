@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:mysql://10.120.66.203:9030/datalab?useSSL=false&serverTimezone=Asia/Shanghai&allowMultiQueries=true
+    url: jdbc:mysql://doris01.prod.internal:9030/datalab?useSSL=false&serverTimezone=Asia/Shanghai&allowMultiQueries=true
     username: root
     password: Xnysc@ds&2025
     driver-class-name: com.mysql.cj.jdbc.Driver
