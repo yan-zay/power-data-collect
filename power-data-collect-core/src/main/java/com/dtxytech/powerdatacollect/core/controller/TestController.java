@@ -3,6 +3,8 @@ package com.dtxytech.powerdatacollect.core.controller;
 import com.dtxytech.powerdatacollect.core.service.test.TestService;
 import com.dtxytech.powerdatacollect.core.task.SyncFetchFileTask;
 import lombok.AllArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -16,6 +18,7 @@ import java.util.Map;
 @AllArgsConstructor
 public class TestController {
 
+    private static final Logger log = LoggerFactory.getLogger(TestController.class);
     private final TestService testService;
     private final SyncFetchFileTask syncFetchFileTask;
 
@@ -39,5 +42,13 @@ public class TestController {
     public String test04() {
 //        syncFetchFileTask.syncVeryShortTermFile();
         return "test04";
+    }
+
+    @GetMapping(value = "/updateInitStatus")
+    public Boolean updateInitStatus(@RequestParam Boolean status) {
+        log.info("TestController updateInitStatus start, INITIALIZED:{}, status:{}", SyncFetchFileTask.INITIALIZED, status);
+        SyncFetchFileTask.INITIALIZED = status;
+        log.info("TestController updateInitStatus end, INITIALIZED:{}, status:{}", SyncFetchFileTask.INITIALIZED, status);
+        return SyncFetchFileTask.INITIALIZED;
     }
 }
