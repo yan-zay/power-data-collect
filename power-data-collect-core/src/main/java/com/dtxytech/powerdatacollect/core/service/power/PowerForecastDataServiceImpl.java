@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -39,14 +40,21 @@ public class PowerForecastDataServiceImpl extends ServiceImpl<PowerForecastDataM
         if (list == null || list.isEmpty()) {
             return;
         }
-        boolean exist = this.checkDuplicate(list.get(0));
-        if (exist) {
-            log.info("powerForecastDataService.checkDuplicate exist, list.get(0):{}", list.get(0));
+        List<PowerForecastData> saveList = new ArrayList<>();
+        for (PowerForecastData data : list) {
+            if (!this.checkDuplicate(data)) {
+                saveList.add(data);
+            }
+        }
+
+        if (saveList.isEmpty()) {
+            log.info("powerForecastDataService.saveList no new data to save");
             return;
         }
-        boolean saved = this.saveBatch(list);
+
+        boolean saved = this.saveBatch(saveList);
         if (!saved) {
-            log.error("powerForecastDataService.saveBatch error, list:{}", list);
+            log.error("powerForecastDataService.saveBatch error, list:{}", saveList);
         }
     }
 
