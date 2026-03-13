@@ -7,7 +7,6 @@ import java.util.Map;
  * @Date 2025/12/12 14:23
  */
 public interface TestService {
-    void test02(Map<String, String> dto);
 
     String insertData(Map<String, String> dto);
 }

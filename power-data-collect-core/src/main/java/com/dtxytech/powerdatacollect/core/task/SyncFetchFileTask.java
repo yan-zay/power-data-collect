@@ -18,7 +18,7 @@ import javax.annotation.PostConstruct;
 @AllArgsConstructor
 public class SyncFetchFileTask {
 
-    public volatile static boolean INITIALIZED = false;
+    public volatile static boolean INITIALIZED = true;
     private final SftpDataSyncService sftpDataSyncService;
 
     // 每10分钟拉一次短期数据

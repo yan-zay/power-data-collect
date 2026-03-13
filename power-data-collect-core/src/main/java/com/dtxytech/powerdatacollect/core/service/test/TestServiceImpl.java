@@ -22,11 +22,6 @@ public class TestServiceImpl implements TestService {
     private PowerForecastDataMapper powerForecastDataMapper;
 
     @Override
-    public void test02(Map<String, String> dto) {
-        log.info("test02: {}", dto);
-    }
-
-    @Override
     public String insertData(Map<String, String> dto) {
         PowerForecastData obj = PowerForecastData.builder()
                 .collectTime(LocalDateTime.now())
