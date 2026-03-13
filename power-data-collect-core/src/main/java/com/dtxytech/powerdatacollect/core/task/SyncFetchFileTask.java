@@ -21,7 +21,7 @@ public class SyncFetchFileTask {
     public volatile static boolean INITIALIZED = true;
     private final SftpDataSyncService sftpDataSyncService;
 
-    // 每10分钟拉一次短期数据
+    // 每X分钟拉一次短期数据
     @Scheduled(cron = "0 0 0/1 * * ? ")
     public void syncShortTermFile() {
         log.info("Starting syncShortTermFile start");
@@ -33,8 +33,8 @@ public class SyncFetchFileTask {
         log.info("syncShortTermFile completed");
     }
 
-    // 每2分钟拉一次超短期数据
-    @Scheduled(cron = "0 0/5 * * * ? ")
+    // 每X分钟拉一次超短期数据
+    @Scheduled(cron = "0 0/10 * * * ? ")
     public void syncVeryShortTermFile() {
         log.info("Starting syncVeryShortTermFile start");
         if (!INITIALIZED) {
